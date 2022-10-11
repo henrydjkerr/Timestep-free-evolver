@@ -8,7 +8,7 @@ This is a generic module that scans through the file "parameters.txt" in the mai
 
 Augments and enhances `Param.py`:
  - Runs some validation checks on expected data, and corrects certain bad inputs to avoid certain cases that would cause the program to misbehave.
- - Obligate constants:
+ - Obligatory constants:
      - `neuron_count_x` (`int` forced to be >= 1), number of neurons along the x-axis
      - `neuron_count_y` (`int` forced to be >= 1), number of neurons along the y-axis
      - `neuron_count_z` (`int` forced to be >= 1), number of neurons along the z-axis
@@ -75,4 +75,5 @@ This is a catch-all module for short functions that I don't expect to need code-
         - Note: admittedly, the synapse updating is hardcoded when it shouldn't be.
      - Add and substract generated signals from the synaptic variable according to their weight.
      - Zero the `lower_bound_d`, `upper_bound_d` and `firing_time_d` arrays.
- - 
+ - Host-side `float find_smallest(array some_device_list, array flags, array partial_device_list, array partial_list)`: take a device-side array and associated set of flags, and return the least element of the subset of elements that have positive flags.  Uses device-side `find_small_qualified` to filter down to a much shorter list of elements before copying the short list to the host and performing a final sort.
+ - Device-side `find_small_qualified(array some_array, array flags, array results_array, float fill)`: take a longer array and pick the least element with a positive flag in each block to pass on in a smaller results array.  If there are no flagged elements in the block, the value defaults to `fill`, which is picked by `find_smallest` to be `numpy.ma.minimum_fill_value` as a maximally largest option.  This means that if `flags` is an all-zero array, this set of find-smallest functions will return an erroneous result, albeit a blatant one.
