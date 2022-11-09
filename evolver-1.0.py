@@ -163,6 +163,15 @@ timestamp = time.strftime("%Y%m%d%H%M%S")
 identifier = "{}-{}N-{}sp".format(timestamp, neurons_number, spikes_sought)
 
 outfile = open("output/output-{}.csv".format(identifier), "w")
+outfile.write("PARAMETERS:\n")
+for key in lookup:
+    line = "PAR,{},{}\n".format(str(key), str(lookup[key]))
+    outfile.write(line)
+outfile.write("MODULES:\n")
+for key in Control.names:
+    line = "MOD,{},{}\n".format(str(key), str(Control.names[key]))
+    outfile.write(line)
+outfile.write("DATA:\n")
 d_coordinates.copy_to_host(coordinates)
 for k in range(len(spike_id)):
     n = spike_id[k]
