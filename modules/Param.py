@@ -16,7 +16,8 @@ lookup = {}
 
 for line in paramfile:
     if ":" in line:
-        sections = line.strip("\n").split(":")
+        line = line.replace(",", "").replace("\n", "")
+        sections = line.split(":")
         key = sections[0]
         try:
             value = sections[1].strip()

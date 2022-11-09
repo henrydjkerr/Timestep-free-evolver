@@ -18,15 +18,16 @@ readflag = False
 
 for line in controlfile:
     #print(line)
+    line = line.replace(",", "").replace("\n", "")
     if (len(line) > 0) and (line[0] == ">"):
-        if line.strip("\n")[1:] == version:
+        if line[1:] == version:
             readflag = True
         else:
             readflag = False
         #print(line, "vs", version)
         #print("readflag", readflag)
     elif (readflag == True) and (":" in line):
-        sections = line.strip("\n").split(":")
+        sections = line.split(":")
         key = sections[0]
         try:
             value = sections[1].strip()
