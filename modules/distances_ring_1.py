@@ -39,10 +39,9 @@ def get_distance_between(coordinates, n_1, n_2):
     return get_distance_from(coordinates, n_2, x, 0, 0)
 
 @cuda.jit
-def get_distance_from_centre(coordinates, n):
+def get_distance_from_zero(coordinates, n):
     """
-    Calculates the Euclidean distance between a neuron and the centre
-    of the neuron population.
+    Calculates the Euclidean distance between a neuron and the origin.
     """
     x = 0.5 * ((neuron_count_x - 1) * dx)
     return get_distance_from(coordinates, n, x, 0, 0)
