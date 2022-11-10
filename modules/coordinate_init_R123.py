@@ -30,16 +30,18 @@ def coordinate_init(coordinates_d):
     n = cuda.grid(1)
     if n < neurons_number:
         if dimension == 1:
-            coordinates_d[n, 0] = n * dx
+            coordinates_d[n, 0] = (n + 0.5 - neuron_count_x / 2) * dx
         elif dimension == 2:
-            x = n % neuron_count_x
-            y = n // neuron_count_x
+            x = n % neuron_count_x + (0.5 - neuron_count_x / 2)
+            y = n // neuron_count_x + (0.5 - neuron_count_y / 2)
             coordinates_d[n, 0] = x * dx + (1 - y % 2) * even_offset_yx
             coordinates_d[n, 1] = y * dy
         elif dimension == 3:
-            x = n % neuron_count_x
-            y = (n // neuron_count_x) % neuron_count_y
-            z = n // (neuron_count_x * neuron_count_y)
+            x = n % neuron_count_x + (0.5 - neuron_count_x / 2)
+            y = (n // neuron_count_x) % neuron_count_y \
+                + (0.5 - neuron_count_y / 2)
+            z = n // (neuron_count_x * neuron_count_y) \
+                + (0.5 - neuron_count_z / 2)
             coordinates_d[n, 0] = x * dx + (1 - y % 2) * even_offset_yx \
                                          + (1 - z % 2) * even_offset_zx
             coordinates_d[n, 1] = y * dy + (1 - z % 2) * even_offset_zy
