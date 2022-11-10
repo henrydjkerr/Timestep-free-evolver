@@ -25,7 +25,7 @@ def get_distance_from(coordinates, n, x, y, z):
     """Calculates the Euclidean distance between a neuron and a given point."""
     if dimension == 1:
         distance = abs(coordinates[n, 0] - x)
-    elif dimension > 2:
+    elif dimension > 1:
         distance2 =   (coordinates[n, 0] - x)**2 \
                     + (coordinates[n, 1] - y)**2
         if dimension == 3:
@@ -41,28 +41,12 @@ def get_distance_between(coordinates, n_1, n_2):
         y = coordinates[n_1, 1]
     else:
         y = 0
-    if dimension == 3:
+    if dimension > 2:
         z = coordinates[n_1, 2]
     else:
         z = 0
     return get_distance_from(coordinates, n_2, x, y, z)
 
 @cuda.jit
-def get_distance_from_centre(coordinates, n):
-    """
-    Calculates the Euclidean distance between a neuron and the centre
-    of the neuron population.
-    """
-    if dimension == 1:
-        x = 0.5 * ((neuron_count_x - 1) * dx)
-        y = 0
-        z = 0
-    elif dimension == 2:
-        x = 0.5 * ((neuron_count_x - 1) * dx + even_offset_yx)
-        y = 0.5 * ((neuron_count_y - 1) * dy)
-        z = 0
-    elif dimension == 3:
-        x = 0.5 * ((neuron_count_x - 1) * dx + even_offset_yx + even_offset_zx)
-        y = 0.5 * ((neuron_count_y - 1) * dy + even_offset_zy)
-        z = 0.5 * ((neuron_count_z - 1) * dz)
-    return get_distance_from(coordinates, n, x, y, z)
+def get_distance_from_zero(coordinates, n):
+    return get_distance_from(coordinates, n, 0, 0, 0)
