@@ -16,9 +16,8 @@ v_r = lookup["v_r"]
 v_th = lookup["v_th"]
 
 @cuda.jit()
-def voltage_init(voltage_d):
+def voltage_init(voltage_d, coordinates_d):
     """Set voltage array to randomly distribute between v_r and v_th."""
     n = cuda.grid(1)
-    neurons_number = len(voltage_d)
     if n < neurons_number:
         voltage_d[n] = v_r + (v_th - v_r) * voltage_d[n]

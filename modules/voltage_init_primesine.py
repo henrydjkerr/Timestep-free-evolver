@@ -16,11 +16,10 @@ v_th = lookup["v_th"]
 dx = lookup["dx"]
 
 @cuda.jit()
-def voltage_init(voltage_d):
+def voltage_init(voltage_d, coordinates_d):
     """Set voltage array to oscillate around v_r using sine waves."""
     n = cuda.grid(1)
-    neurons_number = len(voltage_d)
     if n < neurons_number:
-        pos = dx * n
+        pos = Control.d.get_distance_from_zero(coordinates_d, n)
         change = (1/3) * (sin(7*pos) + sin(11*pos) + sin(17*pos))
         voltage_d[n] = v_r + (v_th - v_r) * change
