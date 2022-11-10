@@ -19,5 +19,5 @@ def input_init(input_strength_d, coordinates_d):
     """Initialises input_strength array with a bellcurve"""
     n = cuda.grid(1)
     if n < neurons_number:
-        position = Control.d.get_distance_from_centre(coordinates_d, n)
+        position = Control.d.get_distance_from_zero(coordinates_d, n)
         input_strength_d[n] =  strength * device_gaussian.curve(position, sigma)

@@ -22,6 +22,6 @@ def input_init(input_strength_d, coordinates_d):
     """
     n = cuda.grid(1)
     if n < neurons_number:
-        position = Control.d.get_distance_from_centre(coordinates_d, n)
+        position = Control.d.get_distance_from_zero(coordinates_d, n)
         strength = input_base_before + rc_height / cosh(rc_narrow * position)
         input_strength_d[n] = strength
