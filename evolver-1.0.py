@@ -15,9 +15,7 @@ This code has not yet been written, but could be switched using the
 architecture mentioned for selecting between modules.
 
 TODO:
- - Save data to file
- - Make data visualisation a separate program
- - Write up a function for the decay = 1 case
+ - Test in 2D
  - Figure out what unit testing looks like on a GPU
  - Look for a nice way to suppress all the under-occupancy warnings
 """
@@ -31,7 +29,7 @@ stopwatch = time.time()
 from numba import cuda
 import numpy
 from numpy.random import default_rng
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from math import pi, e, log
 from random import random
 
@@ -94,7 +92,7 @@ simulation_time = 0
 
 #Initialise voltage, input_strength via CUDA
 Control.xi.coordinate_init[blocks, threads](d_coordinates)
-Control.vi.voltage_init[blocks, threads](d_voltage)
+Control.vi.voltage_init[blocks, threads](d_voltage, d_coordinates)
 Control.ii.input_init[blocks, threads](d_input_strength, d_coordinates)
 
 
@@ -137,6 +135,12 @@ while spike_count < spikes_sought:
             spike_time.append(simulation_time)
             new_spikes += 1
 
+    #Quit if no new neurons can fire
+    if new_spikes == 0:
+        print("No new neurons fired...")
+        #print(fire_flag)
+        break
+
     """Update values"""
     generic.postclean[blocks, threads](d_voltage, d_synapse, d_input_strength,
                                        d_fire_flag, d_lower_bound,
@@ -147,11 +151,6 @@ while spike_count < spikes_sought:
         Control.i.input_update[blocks, threads](d_input_strength,
                                                 simulation_time, fastest_time)
 
-    #Quit if no new neurons can fire
-    if new_spikes == 0:
-        print("No new neurons fired...")
-        #print(fire_flag)
-        break
     spike_count += new_spikes
 
         
@@ -182,16 +181,14 @@ for k in range(len(spike_id)):
 outfile.close()
 print("Save file closed.")
 
-
 ##plt.figure(figsize=(8, 8))#, dpi=1000)
-##x_axis = numpy.array(spike_id)
+##x_axis = numpy.array([coordinates[n, 0] for n in spike_id])
 ##y_axis = numpy.array(spike_time)
 ##plt.scatter(x_axis, y_axis, s=0.2, c="#a0a070")
 ##plt.title("Neuron firing times")
 ##plt.xlabel("Neuron id/position")
 ##plt.ylabel("Time")
 ##plt.margins(x=0, y=0.01)
-##plt.xlim(0, neurons_number)
 ##
 ##plt.savefig("output/figure-{}.png".format(identifier))
 ##plt.show()   
