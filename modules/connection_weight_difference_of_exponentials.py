@@ -24,6 +24,10 @@ density_factor = beta
 dims = [dx, dy, dz]
 for k in range(dimension):
     density_factor *= dims[k]
+#This is consistent within a single dimension, but not across dimensions
+#E.g. consider using the radial symmetry to collapse down a single neuron's
+#view of a 2D population into 1D; instead of uniform density, the density
+#increases proportionally with distance.
 
 #-------------------------------------------------------------------------------
 
