@@ -160,8 +160,9 @@ print("Saving to file...")
 
 timestamp = time.strftime("%Y%m%d%H%M%S")
 identifier = "{}-{}N-{}sp".format(timestamp, neurons_number, spikes_sought)
+filename = "output/output-{}.csv".format(identifier)
 
-outfile = open("output/output-{}.csv".format(identifier), "w")
+outfile = open(filename, "w")
 outfile.write("PARAMETERS:\n")
 for key in lookup:
     line = "PAR,{},{}\n".format(str(key), str(lookup[key]))
@@ -181,19 +182,16 @@ for k in range(len(spike_id)):
 outfile.close()
 print("Save file closed.")
 
-##plt.figure(figsize=(8, 8))#, dpi=1000)
-##x_axis = numpy.array([coordinates[n, 0] for n in spike_id])
-##y_axis = numpy.array(spike_time)
-##plt.scatter(x_axis, y_axis, s=0.2, c="#a0a070")
-##plt.title("Neuron firing times")
-##plt.xlabel("Neuron id/position")
-##plt.ylabel("Time")
-##plt.margins(x=0, y=0.01)
-##
-##plt.savefig("output/figure-{}.png".format(identifier))
-##plt.show()   
-            
+plt.figure(figsize=(8, 8))#, dpi=1000)
+x_axis = numpy.array([coordinates[n, 0] for n in spike_id])
+y_axis = numpy.array(spike_time)
+plt.scatter(x_axis, y_axis, s=0.2, c="#a0a070")
+plt.title("Neuron firing times")
+plt.xlabel("Neuron id/position")
+plt.ylabel("Time")
+plt.margins(x=0, y=0.01)
 
-            
-        
+plt.savefig("output/figure-{}.png".format(identifier))
+plt.show()   
+
     
