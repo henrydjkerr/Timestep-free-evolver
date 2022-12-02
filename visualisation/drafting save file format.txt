@@ -1,0 +1,25 @@
+Want to put the parameters, module choices, etc. in same file.
+Put in initial conditions as well?  Eh, maybe not. Might be easily extended though.
+
+Current output is a .csv file, so can just implement as a csv with extra heading stuff.
+ - Need to sanitise inputs when reading in from config files by stripping out any commas
+ - For parameters, etc. need to dedicate the first "entry" in the csv "row" to saying what sort of row it is, since parameters could have arbitrary names that match any normal section headers.
+
+Having said that: section headers would be good for splitting things up, both human- and machine-readable.
+
+E.g.:
+
+PARAMETERS
+PAR,neuron_count_x,1000
+PAR,neuron_count_y,1
+PAR,neuron_count_z,1
+MODULES
+MOD,distance,distances_R123
+FIRING TIMES
+500,0.4343,12.435,40.240
+501,0.4452,12.543,41.322
+
+
+Don't need headings for the firing times, since they're all numeric
+
+Motivated by desire for the 2D display programs to be able to access info about the layout and size of the 2D without needing to infer it from the data.
