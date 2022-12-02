@@ -50,7 +50,8 @@ def did_fire(fire_flag_d, firing_time_d, fastest_time_d):
 @cuda.jit()
 def postclean(voltage_d, synapse_d, input_strength_d, 
               fire_flag_d, lower_bound_d, upper_bound_d,
-              firing_time_d, coordinates_d, fastest_time_d):
+              firing_time_d, coordinates_d, firing_neurons_d,
+              fastest_time_d):
     """Updates voltages, synaptic values, processes firing signals, resets flags."""
     n = cuda.grid(1)
     if n < neurons_number:
@@ -63,13 +64,12 @@ def postclean(voltage_d, synapse_d, input_strength_d,
         #Update synapse value wrt time evolution
         synapse_d[n] *= e**(-synapse_decay * fastest_time_d)
         #Update synapse value wrt other neurons firing
-        for m in range(neurons_number):
-            if n != m:
-                if fire_flag_d[m]:
-                    distance = Control.d.get_distance_between(coordinates_d,
-                                                              n, m)
-                    synapse_d[n] += Control.c.connection_weight(distance)
-
+        for m in firing_neurons_d:
+            if m > neurons_number:
+                break
+            elif n != m:
+                distance = Control.d.get_distance_between(coordinates_d, n, m)
+                synapse_d[n] += Control.c.connection_weight(distance)
         lower_bound_d[n] = 0
         upper_bound_d[n] = 0
         firing_time_d[n] = 0
