@@ -25,7 +25,7 @@ def v_thI(c):
 
 
 points = 20
-x_values = numpy.linspace(1, 5, points)
+x_values = numpy.linspace(-3.685627, -3.685626, points)
 y_values = numpy.zeros(points)
 for key in range(points):
     print(x_values[key])
