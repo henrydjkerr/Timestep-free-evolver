@@ -40,7 +40,11 @@ def make_graph(filename):
     global total_length
     global point_duration
     frame_length = 50
+<<<<<<< Updated upstream
     total_length = len(source.data) * 2
+=======
+    total_length = len(source.data) * 1
+>>>>>>> Stashed changes
     point_duration = 1 * 1000 #How long before a given point fades completely
     frame_count = total_length // frame_length
 
@@ -48,16 +52,17 @@ def make_graph(filename):
     colours = numpy.array([[1.0, 0.0, 0.0, 0.0] for d in source.data])
 
     global fig
-    fig = plt.figure()
+    fig, ax = plt.subplots()
     global plot
     plot = plt.scatter(source.data["coord"][:,0], source.data["coord"][:,1],
                        c=colours, marker=".")
     plt.margins(x=0.001, y=0.001)
+    ax.set_aspect("equal")
     animation = FuncAnimation(fig, update, frames=frame_count,
                               interval=frame_length)
-    animation.save(filename + ".gif")
     plt.xlabel("x")
     plt.ylabel("y")
+    animation.save(filename + ".gif")
     plt.show()
 
 if __name__ == "__main__":
