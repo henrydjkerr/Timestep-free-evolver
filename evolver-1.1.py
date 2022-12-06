@@ -56,10 +56,11 @@ leniency_threshold = lookup["leniency_threshold"]
 
 #-------------------------------------------------------------------------------
 
+print("a")
 
 #Set up variable arrays
-voltage = default_rng().random(neurons_number)  #Should be v_r if nothing else
-#voltage = numpy.zeros(neurons_number)
+#voltage = default_rng().random(neurons_number)  #Should be v_r if nothing else
+voltage = numpy.zeros(neurons_number)
 synapse = numpy.zeros(neurons_number)
 lower_bound = numpy.zeros(neurons_number)
 upper_bound = numpy.zeros(neurons_number)
@@ -72,9 +73,14 @@ firing_neurons = numpy.zeros(neurons_number, dtype = numpy.dtype(int))
 smallish_array = numpy.zeros(blocks)
 d_smallish_array = cuda.to_device(smallish_array)
 
-#This wouls be where to put any data importing system
-#data_importer("TW5_500N_doubled.csv", coordinates, voltage, synapse)
-#print(synapse)
+#This would be where to put any data importing system
+coordinates, voltage, synapse = data_importer("test_wave.csv")
+##debug_a = 0
+##for debug_b in voltage:
+##    if debug_b > 1:
+##        debug_a += debug_b
+##print(debug_a)
+##print(voltage)
 
 d_voltage = cuda.to_device(voltage)
 d_synapse = cuda.to_device(synapse)
@@ -93,10 +99,11 @@ spike_time = []
 simulation_time = 0
 
 #Initialise voltage, input_strength via CUDA
-Control.xi.coordinate_init[blocks, threads](d_coordinates)
-Control.vi.voltage_init[blocks, threads](d_voltage, d_coordinates)
+#Control.xi.coordinate_init[blocks, threads](d_coordinates)
+#Control.vi.voltage_init[blocks, threads](d_voltage, d_coordinates)
 Control.ii.input_init[blocks, threads](d_input_strength, d_coordinates)
 
+print(1)
 
 while spike_count < spikes_sought:
     """Check if each neuron can fire, create estimated firing times"""
@@ -104,6 +111,11 @@ while spike_count < spikes_sought:
                                               d_input_strength, d_fire_flag,
                                               d_lower_bound, d_upper_bound,
                                               d_firing_time)
+
+##    d_fire_flag.copy_to_host(fire_flag)
+##    debug = 0
+##    for flag in fire_flag: debug += flag
+##    print("1", debug)
         
     """Find out the earliest latest bound on firing"""    
     best_worst_time = generic.find_smallest(d_upper_bound, d_fire_flag,
@@ -113,19 +125,40 @@ while spike_count < spikes_sought:
     generic.cull_larger[blocks, threads](d_lower_bound, d_fire_flag,
                                      best_worst_time * (1 + leniency_threshold))
 
+##    d_fire_flag.copy_to_host(fire_flag)
+##    debug = 0
+##    for flag in fire_flag: debug += flag
+##    print("2", debug)
+
     """Produce accurate estimates of remaining neurons' firing times"""
     Control.solve.find_firing_time[blocks, threads](d_voltage, d_synapse,
                                                     d_input_strength,
                                                     d_fire_flag, d_lower_bound,
                                                     d_upper_bound,
                                                     d_firing_time)
+
+##    d_fire_flag.copy_to_host(fire_flag)
+##    debug = 0
+##    for flag in fire_flag: debug += flag
+##    print("3", debug)
     
     """Check which neuron has the fastest firing time"""
     fastest_time = generic.find_smallest(d_firing_time, d_fire_flag,
                                          d_smallish_array, smallish_array)
 
+##    d_fire_flag.copy_to_host(fire_flag)
+##    debug = 0
+##    for flag in fire_flag: debug += flag
+##    print("4", debug)
+##    print(fastest_time)
+
     """Check which neurons are fast enough to fire"""
     generic.did_fire[blocks, threads](d_fire_flag, d_firing_time, fastest_time)
+
+##    d_fire_flag.copy_to_host(fire_flag)
+##    debug = 0
+##    for flag in fire_flag: debug += flag
+##    print("5", debug)
 
     d_fire_flag.copy_to_host(fire_flag)
     """Record new firing times"""
