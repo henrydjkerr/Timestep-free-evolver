@@ -2,7 +2,7 @@ Parameters for CUDA-implemented firing time finder
 
 Technical
 =========
-version:KW_PAPER
+version:2D_WAVE
 
 |Number of threads per block
 threads:256
@@ -23,14 +23,14 @@ Dimensions
 ==========
 |Number of neurons in each grid dimension
 |If the number is 1 or less, that dimension will be neglected
-neuron_count_x:100
+neuron_count_x:200
 neuron_count_y:100
 neuron_count_z:1
 
 |Spacing between neurons in each dimension
 |Should be non-negative
-dx:0.006
-dy:0.006
+dx:0.1
+dy:0.1
 dz:0.1
 
 |Offsets for even rows, to create hexagonal patterns
@@ -55,7 +55,7 @@ v_th:1
 
 |Don't set this to 1 (or almost 1) for now or else you'll get divide-by-zero errors
 |Should be non-negative
-synapse_decay:3.7074
+synapse_decay:2
 
 
 
@@ -64,10 +64,10 @@ synapse_decay:3.7074
 Connection strength options
 ===========================
 #Difference of normal curves
-normal_strength_e:0.1
-normal_strength_i:0.1
-normal_sigma_e:5
-normal_sigma_i:10
+normal_strength_e:1
+normal_sigma_e:1
+normal_strength_i:0
+normal_sigma_i:1
 
 #Difference of exponentials
 |Remember the strength factor of 2Lbeta/n
