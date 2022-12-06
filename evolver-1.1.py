@@ -56,7 +56,6 @@ leniency_threshold = lookup["leniency_threshold"]
 
 #-------------------------------------------------------------------------------
 
-print("a")
 
 #Set up variable arrays
 #voltage = default_rng().random(neurons_number)  #Should be v_r if nothing else
@@ -102,8 +101,6 @@ simulation_time = 0
 #Control.xi.coordinate_init[blocks, threads](d_coordinates)
 #Control.vi.voltage_init[blocks, threads](d_voltage, d_coordinates)
 Control.ii.input_init[blocks, threads](d_input_strength, d_coordinates)
-
-print(1)
 
 while spike_count < spikes_sought:
     """Check if each neuron can fire, create estimated firing times"""
