@@ -6,17 +6,19 @@ from math import pi, e, erf
 beta = 2
 A = 1
 a = 1
-B = 0 #7
-b = 0 #3.5
+B = 0
+b = 1
 Delta = 1
 sqrt2 = 2**0.5
 
 def part(Z, z, c):
-    part_value = Z*z * e**((z*beta / (c * sqrt2))**2)
-    part_value *= (1 - e**(0.5 * (1 - beta**2) * z**2 / c**2))
-    part_value *= 0.5 * (1 + erf(-z / (c * sqrt2)))
-    print(Z, z, c, part_value)
-    return part_value
+    group_1 = z / (c * sqrt2)
+    group_2 = group_1 * beta
+    coeff = Z*z * e**(group_2**2)
+    part_1 = 0.5 * (1 + erf(-group_2))
+    part_2 = e**(0.5 * (1 - beta**2) * z**2 / c**2) \
+             * 0.5 * (1 + erf(-group_1))
+    return coeff * (part_1 - part_2)
 
 def v_thI(c):
     value = (beta/(1 - beta)) * ((2*pi)**0.5 / c) \
@@ -24,8 +26,10 @@ def v_thI(c):
     return value
 
 
+
+
 points = 20
-x_values = numpy.linspace(-3.685627, -3.685626, points)
+x_values = numpy.linspace(3.45, 3.49, points)
 y_values = numpy.zeros(points)
 for key in range(points):
     print(x_values[key])
