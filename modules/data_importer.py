@@ -10,21 +10,24 @@ too short.
 
 import numpy
 
-def data_importer(filename, coordinates, voltage, synapse):
+from modules import Control
+lookup = Control.lookup
+
+neurons_number = lookup["neurons_number"]
+dimension = lookup["dimension"]
+
+def data_importer(filename):
     """
-    Reads data from file into the supplied arrays.
-    Requires the arrays all be the same length, the file to supply
-    values for all of them, and the arrays to be at least as long
-    as the file.
+    Read data from file into numpy arrays then return the arrays.
+    Assumes formatting of coord, (coord,) voltage, synapse
     """
-    length = len(coordinates)
-    assert length == len(voltage)
-    assert length == len(synapse)
+    coordinates = numpy.zeros((neurons_number, dimension))
+    voltage = numpy.zeros(neurons_number)
+    synapse = numpy.zeros(neurons_number)
 
     infile = open(filename, "r")
-    n = 0
-    for line in infile:
-        if n >= length:
+    for n, line in enumerate(infile):
+        if n >= neurons_number:
             raise IndexError("The source data file {} has too many entries \
 to fit in the supplied arrays (length {}).".format(filename, length))
         entries = line.strip("\n").split(",")
@@ -32,8 +35,11 @@ to fit in the supplied arrays (length {}).".format(filename, length))
             coordinates[n, 0] = float(entries[0])
             voltage[n] = float(entries[1])
             synapse[n] = float(entries[2])
-            n += 1
-
-    
+        elif len(entries) == 4:
+            coordinates[n, 0] = float(entries[0])
+            coordinates[n, 1] = float(entries[1])
+            voltage[n] = float(entries[2])
+            synapse[n] = float(entries[3])
+    return coordinates, voltage, synapse    
     
     
