@@ -28,6 +28,10 @@ def find_firing_time(voltage_d, synapse_d, input_strength_d,
     if n < neurons_number:
         if fire_flag_d[n]:
             v_0 = voltage_d[n]
+            if v_0 > v_th:
+                #Edge case, don't want to root-solve in this case
+                firing_time_d[n] = 0
+                return
             s_0 = synapse_d[n]
             I = input_strength_d[n]
             t_old = firing_time_d[n]
