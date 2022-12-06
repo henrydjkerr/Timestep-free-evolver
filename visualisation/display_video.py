@@ -40,11 +40,7 @@ def make_graph(filename):
     global total_length
     global point_duration
     frame_length = 50
-<<<<<<< Updated upstream
-    total_length = len(source.data) * 2
-=======
     total_length = len(source.data) * 1
->>>>>>> Stashed changes
     point_duration = 1 * 1000 #How long before a given point fades completely
     frame_count = total_length // frame_length
 
