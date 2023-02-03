@@ -55,15 +55,15 @@ v_th:1
 
 |Don't set this to 1 (or almost 1) for now or else you'll get divide-by-zero errors
 |Should be non-negative
-synapse_decay:1.001
+synapse_decay:3
 
 
 
 Connection strength options
 ===========================
 #Difference of normal curves
-normal_strength_e:2
-normal_sigma_e:1
+normal_strength_e:3
+normal_sigma_e:2
 normal_strength_i:0
 normal_sigma_i:10
 
