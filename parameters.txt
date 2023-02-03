@@ -8,30 +8,30 @@ version:2D_WAVE
 threads:256
 
 |Target number of spikes sought
-spikes_sought:20000
+spikes_sought:1000
 
 |How close to the first firing time you need to be in relative terms to qualify as simultaneous firing
 |Should be non-negative
-leniency_threshold:0.00001
+leniency_threshold:0.000000001
 
 |Margin of agreement for successive Newton approximations to be considered a final result
 |Should be positive
-error_bound:0.0000001
+error_bound:0.0000000001
 
 
 Dimensions
 ==========
 |Number of neurons in each grid dimension
 |If the number is 1 or less, that dimension will be neglected
-neuron_count_x:200
-neuron_count_y:100
+neuron_count_x:500
+neuron_count_y:1
 neuron_count_z:1
 
 |Spacing between neurons in each dimension
 |Should be non-negative
-dx:0.1
-dy:0.1
-dz:0.1
+dx:0.04
+dy:1
+dz:1
 
 |Offsets for even rows, to create hexagonal patterns
 |offset_yx will move every even y row in the x direction
@@ -49,25 +49,23 @@ Note- you are obliged to use the x, y, z axes as your first, second and third di
 
 Equation parameters
 ===================
-v_r:0
+v_r:-10
 |Should be larger than v_r
 v_th:1
 
 |Don't set this to 1 (or almost 1) for now or else you'll get divide-by-zero errors
 |Should be non-negative
-synapse_decay:2
-
-
+synapse_decay:3
 
 
 
 Connection strength options
 ===========================
 #Difference of normal curves
-normal_strength_e:1
-normal_sigma_e:1
+normal_strength_e:3
+normal_sigma_e:2
 normal_strength_i:0
-normal_sigma_i:1
+normal_sigma_i:10
 
 #Difference of exponentials
 |Remember the strength factor of 2Lbeta/n
