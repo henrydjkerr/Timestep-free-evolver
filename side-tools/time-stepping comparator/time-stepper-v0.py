@@ -89,6 +89,8 @@ while simulation_time < 2:
 
 
 
+#--------------------
+
 #Console output
 print("Time taken:", time.time() - stopwatch)
 print("Spikes found:", spike_count)
@@ -120,6 +122,7 @@ outfile.close()
 print("Save file closed.")
 
 
+#Plot figure
 plt.figure(figsize=(8, 8))#, dpi=1000)
 x_axis = numpy.array([coordinates[n, 0] for n in spike_id])
 y_axis = numpy.array(spike_time)

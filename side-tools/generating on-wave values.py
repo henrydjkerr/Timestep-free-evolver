@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 from math import pi, e, erf
 
 I = 0.9
-beta = 2
-A = 1
+beta = 1.001
+A = 2
 a = 1
 B = 0 #7
 b = 1 #3.5
 Delta = 1
 sqrt2 = 2**0.5
-c = 3.48
+c = 3.82
 
 def part_v(Z, z, t):
     coeff = Z*z * e**((z*beta / (c * sqrt2))**2)
@@ -38,9 +38,9 @@ def s(t):
 
 
 x_dim = 20
-y_dim = 10
-x_points = 200
-y_points = 100
+y_dim = 1
+x_points = 500
+y_points = 1
 
 outfile = open("test_wave.csv", "w")
 for j in range(x_points):

@@ -1,5 +1,6 @@
 import numpy
 from math import pi, e
+from time import time
 
 #------------------------------------------------------------------------------
 
@@ -14,11 +15,16 @@ def gaussian(x, sigma):
 
 time_step = 0.0001
 
+time_limit = 60
+
+
 def get_zero_time(v_th, v_r, I, signal_strength, signal_sigma, synapse_decay,
                   voltage, synapse, dx, limit):
     simulation_time = 0
     finished = False
-    while (finished == False) and (simulation_time < limit):
+    stopwatch = time()
+    #print(stopwatch)
+    while (finished == False) and (time() - stopwatch < time_limit): #(simulation_time < limit):
         simulation_time += time_step
         for n in range(len(voltage)):
             voltage[n] += time_step * (I - voltage[n] + synapse[n])
@@ -38,6 +44,9 @@ def get_zero_time(v_th, v_r, I, signal_strength, signal_sigma, synapse_decay,
                 if n == 0:
                     finished = True
                     time_taken = simulation_time
+    if time() - stopwatch > time_limit:
+        print("Time stepper ran out of time.")
+        simulation_time = -1
     return simulation_time
                     
 

@@ -29,7 +29,7 @@ def data_importer(filename):
     for n, line in enumerate(infile):
         if n >= neurons_number:
             raise IndexError("The source data file {} has too many entries \
-to fit in the supplied arrays (length {}).".format(filename, length))
+to fit in the supplied arrays.".format(filename))
         entries = line.strip("\n").split(",")
         if len(entries) == 3:
             coordinates[n, 0] = float(entries[0])
@@ -37,7 +37,7 @@ to fit in the supplied arrays (length {}).".format(filename, length))
             synapse[n] = float(entries[2])
         elif len(entries) == 4:
             coordinates[n, 0] = float(entries[0])
-            coordinates[n, 1] = float(entries[1])
+            #coordinates[n, 1] = float(entries[1])
             voltage[n] = float(entries[2])
             synapse[n] = float(entries[3])
     return coordinates, voltage, synapse    
