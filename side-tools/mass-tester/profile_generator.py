@@ -13,7 +13,7 @@ def part_v(Z, z, beta, c, t):
     return coeff * (part_one - part_two)
 
 def v(I, A, a, beta, c, t):
-    value = I + (beta / (1 - beta)) * e**(-t) * (1/c) \
+    value = I + (beta / (1 - beta)) * e**(-t) \
             * part_v(A, a, beta, c, t)
     return value
 
@@ -23,8 +23,8 @@ def part_s(Z, z, beta, c, t):
     return coeff * value
 
 def s(A, a, beta, c, t):
-    value = beta * e**(-beta * t) * (1/c) * \
-            part_s(A, a, beta, c, t)
+    value = beta * e**(-beta * t) \
+            * part_s(A, a, beta, c, t)
     return value
 
 def make(I, A, a, beta, c, x_dim, x_points):

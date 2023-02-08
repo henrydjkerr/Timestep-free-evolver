@@ -17,7 +17,7 @@ sqrt2 = 2**0.5
 ##    return value
 
 def v_th_minus_I(A, a, beta, c):
-    value = (beta/(1 - beta)) * (A/c) * e**((a*beta/(c*sqrt2))**2) * 0.5 \
+    value = (beta/(1 - beta)) * A * e**((a*beta/(c*sqrt2))**2) * 0.5 \
             * (1 + erf(-a*beta/(c*sqrt2))
                - e**(0.5*(1 - beta**2)*((a/c)**2)) * (1 + erf(-a/(c*sqrt2))))
     return value            

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from math import pi, e, erf
 
-beta = 2
+beta = 1.001
 A = 1
 a = 1
 B = 0
@@ -21,7 +21,7 @@ def part(Z, z, c):
     return coeff * (part_1 - part_2)
 
 def v_thI(c):
-    value = (beta/(1 - beta)) * ((2*pi)**0.5 / c) \
+    value = (beta/(1 - beta)) * ((2*pi)**0.5) \
             * (part(A, a, c) - part(B, b, c))
     return value
 
@@ -29,7 +29,7 @@ def v_thI(c):
 
 
 points = 20
-x_values = numpy.linspace(3.45, 3.49, points)
+x_values = numpy.linspace(8, 9, points)
 y_values = numpy.zeros(points)
 for key in range(points):
     print(x_values[key])

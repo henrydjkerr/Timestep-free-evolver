@@ -56,8 +56,12 @@ beta_l = [b, b, b, b, b, b, b, b, b, b, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 #beta_l = [b, 2, 3, 4, 5, 6, 7, 8, 9,10, b, 2, 3, 4, 5, 6, 7, 8, 9,10]
 #A_list = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 
+#a_list = [1]
+#A_list = [1]
+#beta_l = [b]
+
 #print("A\ta\tbeta\tc_theory\tc_numeric")
-print("A\tA_alt\ta\tbeta\tc_theory\tc_numeric")
+print("A\ta\tbeta\tc_theory\tc_numeric")
 
 for n in range(len(A_list)):
     A = A_list[n]
@@ -67,10 +71,10 @@ for n in range(len(A_list)):
     try:
         c_theory = find_c_theory.find_c(A, a, beta, v_th - I)
         #A_alt = (A / (2*pi*a*a))**0.5
-        A_alt = A**0.5
-        c_numeric = find_c(A_alt, a, beta, c_theory)
+        #A_alt = A/2.507
+        c_numeric = find_c(A, a, beta, c_theory)
         #print("{}\t{}\t{}\t{}\t{}".format(A, a, beta, c_theory, c_numeric))
-        print("{}\t{}\t{}\t{}\t{}\t{}".format(A, A_alt, a, beta, c_theory, c_numeric))
+        print("{}\t{}\t{}\t{}\t{}".format(A, a, beta, c_theory, c_numeric))
     except AssertionError:
         pass
 
