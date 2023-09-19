@@ -17,15 +17,17 @@ def make_graph(filename):
 ##    x_values = [x for x in source.data["
     ax.scatter3D(source.data["coord"][:,0], source.data["coord"][:,1],
                  source.data["time"], color=colours, marker=".")
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("t")
+    ax.set_xlabel(r"Neuron $x$ position")
+    ax.set_ylabel(r"Neuron $y$ position")
+    ax.set_zlabel("Time")
 
     x_range = int(source.lookup["neuron_count_x"]) * float(source.lookup["dx"])
     y_range = int(source.lookup["neuron_count_y"]) * float(source.lookup["dy"])
     ax.set_xlim(-x_range/2, x_range/2)
     ax.set_ylim(-y_range/2, y_range/2)
     ax.set_zlim(0, max_t)
+
+    plt.title("10000 neurons, 20000 spikes, 2D")
     plt.show()
 
 if __name__ == "__main__":

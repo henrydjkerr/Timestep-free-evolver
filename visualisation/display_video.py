@@ -41,11 +41,11 @@ def make_graph(filename):
     global point_duration
     frame_length = 50
     total_length = len(source.data) * 1
-    point_duration = 1 * 1000 #How long before a given point fades completely
+    point_duration = 0.3 * 1000 #How long before a given point fades completely
     frame_count = total_length // frame_length
 
     global colours
-    colours = numpy.array([[1.0, 0.0, 0.0, 0.0] for d in source.data])
+    colours = numpy.array([[149/255, 105/255, 190/255, 0.0] for d in source.data])
 
     global fig
     fig, ax = plt.subplots()
