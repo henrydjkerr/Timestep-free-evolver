@@ -73,7 +73,7 @@ smallish_array = numpy.zeros(blocks)
 d_smallish_array = cuda.to_device(smallish_array)
 
 #This would be where to put any data importing system
-coordinates, voltage, synapse = data_importer("test_wave.csv")
+coordinates, voltage, synapse = data_importer("dualwave.csv")
 ##debug_a = 0
 ##for debug_b in voltage:
 ##    if debug_b > 1:
@@ -101,6 +101,9 @@ simulation_time = 0
 #Control.xi.coordinate_init[blocks, threads](d_coordinates)
 #Control.vi.voltage_init[blocks, threads](d_voltage, d_coordinates)
 Control.ii.input_init[blocks, threads](d_input_strength, d_coordinates)
+#debug
+#d_input_strength.copy_to_host(input_strength)
+#d_voltage.copy_to_host(voltage)
 
 while spike_count < spikes_sought:
     """Check if each neuron can fire, create estimated firing times"""
@@ -224,9 +227,9 @@ print("Save file closed.")
 plt.figure(figsize=(8, 8))#, dpi=1000)
 x_axis = numpy.array([coordinates[n, 0] for n in spike_id])
 y_axis = numpy.array(spike_time)
-plt.scatter(x_axis, y_axis, s=0.2, c="#a0a070")
+plt.scatter(x_axis, y_axis, s=0.2, c="#9569be")
 plt.title("Neuron firing times")
-plt.xlabel("Neuron id/position")
+plt.xlabel("Neuron position")
 plt.ylabel("Time")
 plt.margins(x=0, y=0.01)
 
