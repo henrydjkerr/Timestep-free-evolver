@@ -7,7 +7,7 @@ from math import e, erf
 beta = 2
 A = 2
 a = 1
-B = 1
+B = 1.8
 b = 2
 
 target = 0.1    #v_th - I

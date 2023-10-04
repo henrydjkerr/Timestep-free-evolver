@@ -7,7 +7,7 @@ version:IMPORT_WAVE
 threads:256
 
 |Target number of spikes sought
-spikes_sought:10000
+spikes_sought:2000
 
 |How close to the first firing time you need to be in relative terms to qualify as simultaneous firing
 |Should be non-negative
@@ -63,7 +63,7 @@ Connection strength options
 #Difference of normal curves
 normal_strength_e:2
 normal_sigma_e:1
-normal_strength_i:1
+normal_strength_i:2
 normal_sigma_i:2
 
 #Difference of exponentials
