@@ -5,7 +5,7 @@ basis of the value of synapse_decay.
 
 from numba import cuda
 
-from modules import Control
+from modules.general import Control
 lookup = Control.lookup
 
 synapse_decay = lookup["synapse_decay"]

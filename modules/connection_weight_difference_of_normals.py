@@ -7,7 +7,7 @@ two Gaussian or Normal curves with mean zero.
 from numba import cuda
 
 from modules import device_gaussian
-from modules import Control
+from modules.general import Control
 lookup = Control.lookup
 
 sigma_e = lookup["normal_sigma_e"]

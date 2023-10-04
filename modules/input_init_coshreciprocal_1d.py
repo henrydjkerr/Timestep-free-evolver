@@ -16,7 +16,7 @@ rc_height = lookup["rc_height"]
 rc_narrow = lookup["rc_narrow"]
 
 @cuda.jit()
-def input_init(input_strength_d, coordinates_d):
+def array_init(input_strength_d, coordinates_d):
     """
     Initialises input_strength array with a base value added to a 1/cosh curve.
     """

@@ -7,12 +7,15 @@ value instead of zero.
 
 from numba import cuda
 
-from modules import Control
+from modules.general import Control
 lookup = Control.lookup
 
 neurons_number = lookup["neurons_number"]
 input_shutoff = lookup["input_shutoff"]
 input_base_after = lookup["input_base_after"]
+
+blocks = lookup["blocks"]
+threads = lookup["threads"]
 
 
 #-------------------------------------------------------------------------------
@@ -26,11 +29,13 @@ def input_control(new_time):
     else:
         return False
 
-##def input_control(new_time):
-##    return False
+def input_update(arrays, new_time, time_change):
+    input_strength_d = arrays["input_strength"]
+    input_update_device[blocks, threads](input_strength_d, new_time,
+                                         time_change)
 
 @cuda.jit()
-def input_update(input_strength_d, new_time, time_change):
+def input_update_device(input_strength_d, new_time, time_change):
     n = cuda.grid(1)
     if n < neurons_number:
         input_strength_d[n] = input_base_after

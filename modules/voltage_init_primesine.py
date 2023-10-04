@@ -7,7 +7,7 @@ with coprime periods.
 from numba import cuda
 from math import sin
 
-from modules import Control
+from modules.general import Control
 lookup = Control.lookup
 
 neurons_number = lookup["neurons_number"]
@@ -16,7 +16,7 @@ v_th = lookup["v_th"]
 dx = lookup["dx"]
 
 @cuda.jit()
-def voltage_init(voltage_d, coordinates_d):
+def array_init(voltage_d, coordinates_d):
     """Set voltage array to oscillate around v_r using sine waves."""
     n = cuda.grid(1)
     if n < neurons_number:

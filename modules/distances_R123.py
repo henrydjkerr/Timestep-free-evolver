@@ -5,7 +5,7 @@ Device-side distance finding functions for R-spaces, 1/2/3D.
 from numba import cuda
 from math import pi, e
 
-from modules.ParamPlus import lookup
+from modules.general.ParamPlus import lookup
 
 dx = lookup["dx"]
 dy = lookup["dy"]

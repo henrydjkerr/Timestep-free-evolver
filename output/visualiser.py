@@ -6,7 +6,7 @@ import numpy
 import matplotlib.pyplot as plt
 
 
-filename = "output-20221110000457-1000N-1000sp.csv"
+filename = "output-20220811231149-1000N-10000sp.csv"
 #filename = "output-KW-1000N-2x-fix.csv"
 
 infile = open(filename, "r")
@@ -24,19 +24,19 @@ for line in infile:
 
 infile.close()
 
-plt.figure(figsize=(16, 16))
+#plt.figure(figsize=(16, 16))
 x_axis = numpy.array(position_x)
 y_axis = numpy.array(timestamp)
-plt.scatter(x_axis, y_axis, s=0.2, c="#a0a070")
-plt.title("Neuron firing times")
-plt.xlabel("Neuron position")
+plt.scatter(x_axis, y_axis, s=0.1, c="#009955")
+plt.title("1000 neurons, 10000 spikes, 1D")
+plt.xlabel(r"Neuron $x$ position")
 plt.ylabel("Time")
-plt.margins(x=0, y=0.01)
+plt.margins(x=0.005, y=0.01)
 
-plt.ylim(0, 200)
+#plt.ylim(0, 200)
 #plt.xlim(0, 6)
 
-plt.savefig("1000N-wave.png")
+#plt.savefig("1000N-wave.png")
 plt.show()
 
 ##test_array_1 = numpy.arange(1000)

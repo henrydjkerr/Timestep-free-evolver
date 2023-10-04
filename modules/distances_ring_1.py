@@ -7,7 +7,7 @@ is found by travelling along the line in whichever direction is shortest.
 from numba import cuda
 from math import pi, e
 
-from modules.ParamPlus import lookup
+from modules.general.ParamPlus import lookup
 
 dx = lookup["dx"]
 dy = lookup["dy"]

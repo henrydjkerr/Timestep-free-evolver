@@ -1,0 +1,4 @@
+parameters:config/parameters.txt
+modules:config/settings-sLIF-DEFAULT.txt
+arrays:config/arrays-sLIF.txt
+import:config/data_import-wave.txt

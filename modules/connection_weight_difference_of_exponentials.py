@@ -7,7 +7,7 @@ two exponenial functions with negative exponents.
 from numba import cuda
 from math import pi, e
 
-from modules.ParamPlus import lookup
+from modules.general.ParamPlus import lookup
 
 strength_e = lookup["exp_strength_e"]
 strength_i = lookup["exp_strength_i"]

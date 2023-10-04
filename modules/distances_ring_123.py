@@ -24,7 +24,7 @@ and ignore the even_offset_vw values.
 from numba import cuda
 from math import pi, e
 
-from modules.ParamPlus import lookup
+from modules.general.ParamPlus import lookup
 
 dx = lookup["dx"]
 dy = lookup["dy"]

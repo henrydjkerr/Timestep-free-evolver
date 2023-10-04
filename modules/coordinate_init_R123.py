@@ -4,7 +4,7 @@ Sets up coordinates for Real-space 1/2/3D.
 
 from numba import cuda
 
-from modules import Control
+from modules.general import Control
 lookup = Control.lookup
 
 neurons_number = lookup["neurons_number"]
@@ -22,7 +22,7 @@ even_offset_zy = lookup["even_offset_zy"]
 
 
 @cuda.jit()
-def coordinate_init(coordinates_d):
+def coord_init(coordinates_d):
     """
     Initialises supplied coordinate array according to values in parameters.txt.
     Automatically adjusts to 1D, 2D or 3D setups.

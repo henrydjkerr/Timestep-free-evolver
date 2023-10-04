@@ -21,7 +21,7 @@ The cases are described further in 'fire_check_not1 cases.odt'
 
 from numba import cuda
 
-from modules import Control
+from modules.general import Control
 lookup = Control.lookup
 
 synapse_decay = lookup["synapse_decay"]
@@ -29,15 +29,37 @@ v_th = lookup["v_th"]
 v_r = lookup["v_r"]
 neurons_number = lookup["neurons_number"]
 
+blocks = lookup["blocks"]
+threads = lookup["threads"]
+
+def fire_check(arrays):
+    """
+    Wrapper function so we don't need to specify which arrays are needed
+    in the main program file.
+    """
+    voltage_d = arrays["voltage"]
+    synapse_d = arrays["synapse"]
+    input_strength_d = arrays["input_strength"]
+    fire_flag_d = arrays["fire_flag"]
+    lower_bound_d = arrays["lower_bound"]
+    upper_bound_d = arrays["upper_bound"]
+    firing_time_d = arrays["firing_time"]
+    fire_check_device[blocks, threads](voltage_d, synapse_d, input_strength_d,
+                                       fire_flag_d, lower_bound_d,
+                                       upper_bound_d, firing_time_d)
 
 @cuda.jit()
-def fire_check(voltage_d, synapse_d, input_strength_d,
-               fire_flag_d, lower_bound_d, upper_bound_d, firing_time_d):
+def fire_check_device(voltage_d, synapse_d, input_strength_d, fire_flag_d,
+                      lower_bound_d, upper_bound_d, firing_time_d):
     """
     Checks whether the neuron can fire and records firing bounds.
     We use the firing_time_d to hold the start point for a non-interval-type
     root-finding scheme.
+
+    Expects arrays: voltage, synapse, input_strength, fire_flag,
+    lower_bound, upper_bound, firing_time
     """
+    
     n = cuda.grid(1)
     if n < neurons_number:
         fire_flag_d[n] = 1

@@ -8,7 +8,7 @@ the first place, so it's not doing the heavy lifting.
 
 from numba import cuda
 
-from modules import Control
+from modules.general import Control
 lookup = Control.lookup
 
 neurons_number = lookup["neurons_number"]
@@ -16,7 +16,7 @@ v_r = lookup["v_r"]
 v_th = lookup["v_th"]
 
 @cuda.jit()
-def voltage_init(voltage_d, coordinates_d):
+def array_init(voltage_d, coordinates_d):
     """Set voltage array to randomly distribute between v_r and v_th."""
     n = cuda.grid(1)
     if n < neurons_number:

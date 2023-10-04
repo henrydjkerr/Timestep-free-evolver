@@ -7,7 +7,7 @@ from math import pi, e
 
 
 @cuda.jit(device = True)
-def curve(distance, sigma):
+def curve(mu, sigma):
     """Generates a Gaussian curve"""
-    value = (1 / (sigma * (2 * pi) ** 0.5)) * e**(-0.5 * (distance / sigma)**2)
+    value = (1 / (sigma * (2 * pi) ** 0.5)) * e**(-0.5 * (mu / sigma)**2)
     return value
