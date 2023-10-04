@@ -68,11 +68,10 @@ filename_import = locator.location["import"]
 import_info = locator.file_reader(filename_import)
 
 for line in import_info:
-    try:
-        key = line[0]
-        data_filename = line[1]
-        array = host_arrays[key]
-        file_to_array(data_filename, array)
+    key = line[0]
+    data_filename = line[1]
+    array = host_arrays[key]
+    file_to_array(data_filename, array)
 
 
 
