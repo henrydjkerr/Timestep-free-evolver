@@ -55,14 +55,15 @@ def get_distance_from(coordinates, n, x, y, z):
     """
     Calculates the Euclidean ring distance between a neuron and a given point.
     """
-    x_distance = (neuron_count_x + 1) * dx
+    #x_distance = (neuron_count_x + 1) * dx
+    x_distance = neuron_count_x * dx
     distance = get_smallest_path(coordinates[n, 0], x, x_distance)
     if dimension > 1:
         distance = distance**2
-        y_distance = (neuron_count_y + 1) * dy
+        y_distance = neuron_count_y * dy
         distance += get_smallest_path(coordinates[n, 1], y, y_distance)**2
         if dimension > 2:
-            z_distance = (neuron_count_z + 1) * dz
+            z_distance = neuron_count_z * dz
             distance += get_smallest_path(coordinates[n, 2], z, z_distance)**2
         distance = distance**0.5
     return distance

@@ -28,7 +28,7 @@ def get_distance_from(coordinates, n, x, y, z):
     Calculates the 1D ring distance between a neuron and a given point.
     """
     d_1 = abs(coordinates[n, 0] - x)
-    d_2 = ((neuron_count_x + 1) * dx) - d_1
+    d_2 = (neuron_count_x * dx) - d_1
     distance = d_1 * (d_1 < d_2) + d_2 * (d_1 >= d_2)
     return distance
 
