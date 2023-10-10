@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 from math import e, erf
 
 #Shouldn't be 1 for this program, just use 1.0001 or similar
-beta = 2
+beta = 1.58
 A = 2
 a = 1
-B = 1.8
+B = 2
 b = 2
 
 target = 0.1    #v_th - I
@@ -30,8 +30,8 @@ def whole(c):
 #This is probably going to be a bit of a hack for now
 
 c = 1
-step = 1
-margin = 0.0001
+step = 0.5
+margin = 0.00001
 for count in range(100):
     test = whole(c)
     if test > target:
@@ -47,8 +47,9 @@ if count == 99:
 print(count)
 print(c)
 
-points = 20
+points = 200
 x_values = numpy.linspace(c - 0.2, c + 0.2, points)
+x_values = numpy.linspace(0.4, 0.6, points)
 y_values = numpy.zeros(points)
 for key in range(points):
     y_values[key] = whole(x_values[key])
@@ -56,5 +57,10 @@ for key in range(points):
 plt.figure()
 plt.plot(x_values, y_values)
 plt.axhline(y = target)
+
+plt.title("Speed finder, $(A, a, B, b)$ = ({}, {}, {}, {}), $\\beta$ = {}".format(
+    A, a, B, b, beta))
+plt.xlabel("Speed $c$")
+plt.ylabel("$v_{th} - I$")
 plt.show()
         

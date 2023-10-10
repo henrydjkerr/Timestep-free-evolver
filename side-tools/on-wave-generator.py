@@ -1,12 +1,12 @@
 from math import e, erf
 
-beta = 2
+beta = 2.1
 A = 2
 a = 1
-B = 1.8
+B = 2
 b = 2
 
-c = 1.0859375
+c = 0.8369
 
 I = 0.9
 dx = 0.04
@@ -47,7 +47,7 @@ for n in range(neurons_number):
         synapse = s(t)
     else:
         voltage = 0
-        synapse = -1
+        synapse = s(t)
     if n == neurons_number - 1:
         line_end = ""
     v_file.write(str(voltage) + line_end)

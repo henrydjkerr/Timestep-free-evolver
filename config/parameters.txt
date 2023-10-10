@@ -7,7 +7,7 @@ version:IMPORT_WAVE
 threads:256
 
 |Target number of spikes sought
-spikes_sought:2000
+spikes_sought:1500
 
 |How close to the first firing time you need to be in relative terms to qualify as simultaneous firing
 |Should be non-negative
@@ -54,7 +54,7 @@ v_th:1
 
 |Don't set this to 1 (or almost 1) for now or else you'll get divide-by-zero errors
 |Should be non-negative
-synapse_decay:2
+synapse_decay:1.55
 
 
 

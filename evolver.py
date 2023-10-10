@@ -160,6 +160,9 @@ plt.ylabel("Time")
 plt.margins(x=0, y=0.01)
 
 #plt.savefig("output/figure-{}.png".format(identifier))
-plt.show()   
+plt.show()
 
+print(spike_id[500], spike_time[500])
+print(spike_id[1000], spike_time[1000])
+print(spike_time[1000] - spike_time[500])
     
