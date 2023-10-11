@@ -3,10 +3,10 @@
 ## locator.py
 Read and store where individual configuration files are to be found from `settings_selection.txt`, and enable reading their contents.
 
-###Functions:
+### Functions:
 `file_reader(str filename)`: take the name of a file, then returns a list of lists produces as follows: for each line in the file, if the line contains a colon, create a list of strings from the line's contents by splitting at the position of each colon, then append this list as a single entry in the to-be-returned list.
 
-###Constants:
+### Constants:
 `dict location`: stores the name of each configuration file in use, keyed by a string naming their purpose.  Currently used are:
  - `parameters` stores the general numerical constants and dimensions for the model.
  - `modules` determines which modules are imported to construct and service the model in code.
@@ -18,7 +18,7 @@ Read in the parameters config file using `locator.py`, storing the results in a 
 
 Note that `Param.py` should not be referenced directly, as `ParamPlus.py` does necessary post-processing on the dictionary.  The dictionary is then pulled forward into `Control.py` without modification, so if you already need access to `Control.py` you don't need `ParamPlus.py` as well.
 
-###Constants:
+### Constants:
 `dict lookup`: the aforementioned dictionary of parameters.
 
 ## ParamPlus.py
@@ -26,7 +26,7 @@ Run sanity checks on the existence, data type and range of certain compulsory pa
 
 Additionally, generate a small number of additional parameters derived from the existing compulsory ones.
 
-###Constants:
+### Constants:
 `dict lookup`: the dictionary is rebound here for ease of access.
 
 ## Control.py
