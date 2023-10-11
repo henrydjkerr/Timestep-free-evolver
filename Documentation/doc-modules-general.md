@@ -34,5 +34,5 @@ Read in the modules config file using `locator.py`, and import the modules reque
 
 Additionally, as the manager for imported modules, also contains a function for initialising arrays, since the form initialisation takes is dependent on imported modules.
 
-###Functions:
+### Functions:
 `fill_arrays(dict arrays)`: 
