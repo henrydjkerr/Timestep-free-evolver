@@ -38,7 +38,6 @@ from modules.general import Control
 lookup = Control.lookup
 from modules.general import generic
 from modules.general import array_manager
-from modules.general import data_loader
 from modules.general import save
 
 #from modules.general.data_importer import data_importer
@@ -106,7 +105,8 @@ while spike_count < spikes_sought:
                                          d_smallish_array, smallish_array)
 
     """Check which neurons are fast enough to fire"""
-    generic.did_fire[blocks, threads](d_fire_flag, d_firing_time, fastest_time)
+    generic.cull_larger[blocks, threads](d_firing_time, d_fire_flag,
+                                         fastest_time * (1 + leniency_threshold))
 
     """Record new firing times"""
     array_manager.retrieve("fire_flag")

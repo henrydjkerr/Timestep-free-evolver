@@ -37,16 +37,6 @@ synapse_decay = lookup["synapse_decay"]
 threads = lookup["threads"]
 blocks = lookup["blocks"]
 
-
-@cuda.jit()
-def did_fire(fire_flag_d, firing_time_d, fastest_time_d):
-    """Screens for neurons that fire too late to make the acceptable window."""
-    n = cuda.grid(1)
-    if n < neurons_number:
-        if fire_flag_d[n]:
-            if firing_time_d[n] > fastest_time_d * (1 + leniency_threshold):
-                fire_flag_d[n] = 0
-
 def postclean(arrays, fastest_time):
     """Technically, this isn't actually generic, but..."""
     voltage_d = arrays["voltage"]
