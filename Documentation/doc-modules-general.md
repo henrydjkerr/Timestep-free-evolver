@@ -78,10 +78,6 @@ Note that you cannot pass dictionaries to GPU functions using Numba; you have to
 `file_to_array(str filename, array array)`: read data from the specified file into an array.  The source format should be a plaintext file, one data value per line.
 
 
-## data_loader.py
-
-Hang on, isn't this just replicating functionality in `array_manager.py`?  Can't I just remove this?
-
 
 ## save.py
 
