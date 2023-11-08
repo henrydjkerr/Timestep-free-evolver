@@ -78,10 +78,6 @@ Note that you cannot pass dictionaries to GPU functions using Numba; you have to
 `file_to_array(str filename, array array)`: read data from the specified file into an array.  The source format should be a plaintext file, one data value per line.
 
 
-## data_loader.py
-
-Hang on, isn't this just replicating functionality in `array_manager.py`?  Can't I just remove this?
-
 
 ## save.py
 
@@ -102,8 +98,6 @@ A collection of smaller functions used in the mathematical treatment on the mode
 At the moment, some functions are insufficiently generic to be places here, so they should be moved.
 
 ### Functions:
-
-`did_fire`: nongeneric duplication of `cull_larger`, to be removed.
 
 `cull_larger(array some_array, array flags, float threshold)`: for each index, set the flag to False if the array value is above the threshold value.
 
