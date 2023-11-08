@@ -99,8 +99,6 @@ At the moment, some functions are insufficiently generic to be places here, so t
 
 ### Functions:
 
-`did_fire`: nongeneric duplication of `cull_larger`, to be removed.
-
 `cull_larger(array some_array, array flags, float threshold)`: for each index, set the flag to False if the array value is above the threshold value.
 
 `postclean(dict arrays, float fastest_time)`: wrapper function to pull out the arrays needed for the parallel function `postclean_device`.  Since this requires specific knowledge of which arrays are used, and then what needs to be done to update them, this should be moved out of `modules/general`.
