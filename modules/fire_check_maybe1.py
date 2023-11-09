@@ -10,7 +10,7 @@ lookup = Control.lookup
 
 synapse_decay = lookup["synapse_decay"]
 
-if abs(synapse_decay - 1) < 0.01:   #Probably shouldn't hardcode this value
+if abs(synapse_decay - 1) < 0.001:   #Probably shouldn't hardcode this value
     from modules.fire_check_is1 import fire_check
 else:
     from modules.fire_check_not1 import fire_check
