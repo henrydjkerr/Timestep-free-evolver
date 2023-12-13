@@ -1,16 +1,23 @@
 import numpy
 import matplotlib.pyplot as plt
 
-from math import e, erf
+from math import e, erf, pi
 
 #Shouldn't be 1 for this program, just use 1.0001 or similar
-beta = 1.58
-A = 2
+beta = 2
+A = 0.8
 a = 1
-B = 2
+B = 0.4
 b = 2
 
+is_2D = True
 target = 0.1    #v_th - I
+
+#If in 2D:
+if is_2D:
+    A = A * a * ((2*pi)**0.5)
+    B = B * b * ((2*pi)**0.5)
+
 
 #The follows is based on formula 8.17 in running review
 #May differ from past versions in factors of (2*pi)**0.5 for Z
@@ -49,7 +56,7 @@ print(c)
 
 points = 200
 x_values = numpy.linspace(c - 0.2, c + 0.2, points)
-x_values = numpy.linspace(0.4, 0.6, points)
+x_values = numpy.linspace(0.2, 5, points)
 y_values = numpy.zeros(points)
 for key in range(points):
     y_values[key] = whole(x_values[key])
