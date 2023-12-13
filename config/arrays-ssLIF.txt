@@ -1,0 +1,9 @@
+voltage:neurons_number:double
+wigglage:neurons_number:double
+synapse:neurons_number:double
+lower_bound:neurons_number:double
+upper_bound:neurons_number:double
+firing_time:neurons_number:double
+fire_flag:neurons_number:bool
+input_strength:neurons_number:double
+firing_neurons:neurons_number:int
