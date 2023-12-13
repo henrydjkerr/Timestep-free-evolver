@@ -29,9 +29,17 @@ def update(i):
         colours[k, 3] = get_opacity(i, source.data["time"][k])
     plot.set_color(colours)
 
+    global filename
+    #if (i >= 75) and (i < 275):
+        #j = i - 75
+        #plt.savefig(filename_global + "-" + str(j) + ".png")
+    plt.savefig(filename_global + "-" + str(i) + ".png")
+
 #------------------------------------------------------------------------------
 
 def make_graph(filename):
+    global filename_global
+    filename_global = filename
     global source
     source = data_reader.get(filename)
     global max_t
@@ -43,7 +51,6 @@ def make_graph(filename):
     total_length = len(source.data) * 1
     point_duration = 0.3 * 1000 #How long before a given point fades completely
     frame_count = total_length // frame_length
-    print("frame count:", frame_count)
 
     global colours
     colours = numpy.array([[149/255, 105/255, 190/255, 0.0] for d in source.data])
