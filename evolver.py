@@ -85,6 +85,7 @@ spike_id = []
 spike_time = []
 simulation_time = 0
 
+
 while spike_count < spikes_sought:
     """Check if each neuron can fire, create estimated firing times"""
     Control.check.fire_check(array_manager.device_arrays)
@@ -128,7 +129,7 @@ while spike_count < spikes_sought:
         break
 
     """Update values"""
-    generic.postclean(array_manager.device_arrays, fastest_time)
+    Control.clean.postclean(array_manager.device_arrays, fastest_time)
 
     if Control.i.input_control(simulation_time):
         Control.i.input_update(array_manager.device_arrays,
@@ -162,7 +163,5 @@ plt.margins(x=0, y=0.01)
 #plt.savefig("output/figure-{}.png".format(identifier))
 plt.show()
 
-print(spike_id[500], spike_time[500])
-print(spike_id[1000], spike_time[1000])
-print(spike_time[1000] - spike_time[500])
+
     
