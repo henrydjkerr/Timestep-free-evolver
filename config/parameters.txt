@@ -22,14 +22,14 @@ Dimensions
 ==========
 |Number of neurons in each grid dimension
 |If the number is 1 or less, that dimension will be neglected
-neuron_count_x:500
-neuron_count_y:1
+neuron_count_x:100
+neuron_count_y:100
 neuron_count_z:1
 
 |Spacing between neurons in each dimension
 |Should be non-negative
-dx:0.04
-dy:1
+dx:0.1
+dy:0.1
 dz:1
 
 |Offsets for even rows, to create hexagonal patterns
@@ -54,16 +54,18 @@ v_th:1
 
 |Don't set this to 1 (or almost 1) for now or else you'll get divide-by-zero errors
 |Should be non-negative
-synapse_decay:1.55
-
+synapse_decay:2
+|How small (synapse_decay - 1) is allowed to get before you swap to 
+|special equations
+decay_tolerance: 0.00001
 
 
 Connection strength options
 ===========================
 #Difference of normal curves
-normal_strength_e:2
+normal_strength_e:0.8
 normal_sigma_e:1
-normal_strength_i:2
+normal_strength_i:0.4
 normal_sigma_i:2
 
 #Difference of exponentials
@@ -78,7 +80,7 @@ Input strength options
 |Determines gaussian curve spread for input strength curve proxy
 |Should be non-negative
 input_sigma:1
-input_strength:3
+input_strength:20
 
 |Determines time the input "shuts off" at, if such an option is used
 input_shutoff:3
@@ -92,4 +94,9 @@ rc_height:2
 rc_narrow:10
 
 
+Subthreshold stuff
+==================
+Still need proper names for these
+C:2
+D:1
 

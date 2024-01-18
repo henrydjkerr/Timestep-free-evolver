@@ -49,12 +49,17 @@ data_types = {"bool": np.bool_, "int": np.int_,
 filename = locator.location["arrays"]
 raw_info = locator.file_reader(filename)
 
+rng = np.random.default_rng()
 for line in raw_info:
     try:
         key = line[0]
         length = line[1]
         data_type = line[2]
-        host_arrays[key] = np.zeros(lookup[length], data_types[data_type])
+        #host_arrays[key] = np.zeros(lookup[length], data_types[data_type])
+        try:
+            host_arrays[key] = rng.random(lookup[length], data_types[data_type])
+        except TypeError:
+            host_arrays[key] = np.zeros(lookup[length], data_types[data_type])
     except ValueError:
         pass
         #Should probably have proper error reporting here
