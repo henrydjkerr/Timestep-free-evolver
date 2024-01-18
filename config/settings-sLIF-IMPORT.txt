@@ -7,5 +7,6 @@ v_init:voltage_init_null
 i_init:input_init_constant
 coord_init:coordinate_init_R123
 
-fire_check:fire_check_maybe1
+fire_check:fire_check_sLIF
 root_finder:newton_raphson
+cleanup:cleanup_sLIF

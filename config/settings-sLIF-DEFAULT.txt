@@ -1,11 +1,12 @@
 distance:distances_ring_123
 connection_weight:connection_weight_difference_of_normals
 v_calcs:v_calcs_SLIF
-i_update:input_update_constant
+i_update:input_update_shutoff
 
 v_init:voltage_init_random_uniform
 i_init:input_init_gaussian
 coord_init:coordinate_init_R123
 
-fire_check:fire_check_maybe1
+fire_check:fire_check_sLIF
 root_finder:newton_raphson
+cleanup:cleanup_sLIF
