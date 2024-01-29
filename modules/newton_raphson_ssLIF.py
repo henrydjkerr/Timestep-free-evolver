@@ -2,7 +2,7 @@
 Newton-Raphson root-finding function for finding t such that v(t) = v_th.
 """
 
-from math import pi, e
+from math import pi, e, ceil
 from numba import cuda
 
 from modules.general import Control
@@ -72,33 +72,83 @@ def find_firing_time_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             #drop any neurons.  Would need a change to the main loop.
                     
             #Second, seek through window
+            #...which needs a window
             t_start = firing_time_d[n]
-            t_end = t_start + Control.v.period
-            #For which we need an upper bound on the gradient:
+            phase_offset = Control.v.trig_phase(v_0, s_0, u_0, I)
+            #This is the next time that the oscillating term hits the top
+            # of its envelope
+            t_end = 2 * pi * ceil((Control.v.abs_q * t_start
+                                   + phase_offset)/(2 * pi)) \
+                     - phase_offset                   
+            #We also need an upper bound on the gradient:
+            p = Control.v.p
             dv_max = abs(Control.v.coeff_trig(v_0, s_0, u_0, I)) \
-                     *  (Control.v.p**2 - Control.v.q2) \
-                     * e**(-Control.v.p * t_start)
+                     * (p**2 - Control.v.q2) * e**(-p * t_start)
             B = Control.v.coeff_synapse(s_0)
             if B > 0:
                 exp_t = t_end
             else:
                 exp_t = t_start
-            dv_max -= Control.v.coeff_synapse(s_0) * synapse_decay \
-                      * e**(-synapse_decay * exp_t)
-            #Now we start stepping
-            t_current = t_start
-            for count in range(1000):
-                v_current = Control.v.get_vt(t_current, v_0, s_0, u_0, I)
-                if abs(v_current - v_th) < 0.01:
-                    break
-                elif v_current > v_th:
-                    #Shouldn't happen but just to be safe
-                    #pass
-                    break
-                if t_current > t_end:
-                    #Failure condition
+            dv_max -= B * synapse_decay * e**(-synapse_decay * exp_t)
+            #Now we start stepping, using dv_max
+            t_old = t_start
+            v_old = Control.v.get_vt(t_old, v_0, s_0, u_0, I)
+            t_new = t_old
+            v_new = v_old
+            grad_old = -1.0
+            grad_new = -1.0
+            NR_flag = False
+            for count in range(100):
+                if t_new > t_end:
+                    #If you pass t_end, there's no root in the interval
                     fire_flag_d[n] = 0
                     return
-                t_current += (v_th - v_current) / dv_max
-            firing_time_d[n] = t_current
+                elif abs(v_new - v_th) < 0.01: #Placeholder; don't hardcode
+                    #If you've reached close enough, finish
+                    firing_time_d[n] = t_new
+                    return
+                elif v_new > v_th:
+                    #If you've somehow overshot, finish
+                    #Not sure best way to error-handle this honestly
+                    firing_time_d[n] = t_new
+                    return
+                elif (grad_old > grad_new) and (grad_new > 0):
+                    #You're now in territory where Newton-Raphson works better
+                    NR_flag = True
+                    break
+                #Update step
+                t_old = t_new
+                v_old = v_new
+                t_new += (v_th - v_new) / dv_max
+                v_new = Control.v.get_vt(t_new, v_0, s_0, u_0, I)
+                #Keep a record of the gradient
+                grad_old = grad_new
+                grad_new = (v_new - v_old) / (t_new - t_old)
+                #(Don't get divide-by-zero since t_new = t_old <-> v_old = v_th)
+
+            #If that didn't return, you're back to Newton-Raphson
+            #Starting where the previous step left off
+            if NR_flag == True:
+                for count in range(100):
+                    t_old = t_new
+                    v_old = v_new
+                    v_new = Control.v.get_vt_upper(t_old, v_0, s_0, u_0, I)
+                    v_deriv = Control.v.get_dvdt_upper(t_old, v_0, s_0, u_0, I)
+                    t_new = t_old + (v_th - v_new) / v_deriv
+                    if abs(t_new - t_old) <= error_bound:
+                        firing_time_d[n] = t_new
+                        return
+                    elif v_new < v_old:
+                        #If your value of v decreases, there's no root here
+                        fire_flag_d[n] = False
+                        return
+                    elif t_new > t_end:
+                        #If you pass t_end, there's no root in the interval
+                        fire_flag_d[n] = False
+                        return
+            else:
+                #Not sure what to do here yet
+                pass
+            #Shouldn't really get here except in weird cases
+            firing_time_d[n] = t_new
             return
