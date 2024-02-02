@@ -99,7 +99,7 @@ def get_vt(t, v_0, s_0, u_0, I):
 @cuda.jit(device = True)
 def get_dvdt(t, v_actual, v_0, u_0, I):
     """Calculates the derivative of v(t) given its current value"""
-    u_actual = get_ut(t, v_0, s_0, I)
+    u_actual = get_ut(t, v_0, s_0, u_0, I)
     return I - v_actual - u_actual + s_0*e**(-beta * t) + I
 
 @cuda.jit(device = True)
