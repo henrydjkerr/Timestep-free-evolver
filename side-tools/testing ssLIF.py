@@ -21,9 +21,18 @@ def s(x, p, abs_q, q2):
 def part_c(v_0, s_0, u_0, I, p, abs_q, q2):
     return v_0 - coeff_synapse(s_0, p, abs_q, q2) - coeff_const(I, p, abs_q, q2)
 
-def part_s(v_0, s_0, u_0, I, p, abs_q, q2):
-    return -((s_0 * (p**2 + q2 - p*(beta + 1) + beta)) \
-           + (I * (p**2 + q2 - p) / (p**2 - q2) + v_0 * (1 - p) + u_0) / abs_q)
+##def part_s(v_0, s_0, u_0, I, p, abs_q, q2):
+##    value = s_0 * (p**2 + q2 - p*(beta + 1) + beta)
+##    value =  -(value+ (I * (p**2 + q2 - p) / (p**2 - q2) + v_0 * (1 - p) + u_0) / abs_q)
+##    return value
+##    #return -((s_0 * (p**2 + q2 - p*(beta + 1) + beta)) \
+##    #       + (I * (p**2 + q2 - p) / (p**2 - q2) + v_0 * (1 - p) + u_0) / abs_q)
+
+def part_s(v_0, s_0, u_0, I, p, abs_q, p2):
+    value = s_0 * (p**2 + q2 - p*(beta + 1) + beta) / ((p - beta)**2 - q2)
+    value += I * (p**2 + q2 - p) / (p**2 - q2) + v_0 * (1 - p) + u_0
+    value /= -abs_q
+    return value
 
 def coeff_trig(v_0, s_0, u_0, I, p, abs_q, q2):
     #Coefficient of the "trigonometric" terms in the true voltage equation
@@ -54,7 +63,7 @@ def coeff_synapse(s_0, p, abs_q, q2):
 
 def coeff_const(I, p, abs_q, q2):
     #Long term limit in the true voltage equation
-    return I * (2*p - 1) / (p*2 - q2)
+    return I * (2*p - 1) / (p**2 - q2)
 
 #------------------------------------------------------------------------------
 #Functions for the actual value of v and u
@@ -64,7 +73,8 @@ def get_vt(t, v_0, s_0, u_0, I, p, abs_q, q2):
     theta = trig_phase(v_0, s_0, u_0, I, p, abs_q, q2)
     B = coeff_synapse(s_0, p, abs_q, q2)
     K = coeff_const(I, p, abs_q, q2)
-    return T*e**(-p * t)*c(abs_q*t + theta, p, abs_q, q2) + B*e**(-beta * t) + K
+    #return T*e**(-p * t)*c(abs_q*t + theta, p, abs_q, q2) + B*e**(-beta * t) + K
+    return T*e**(-p * t)*cos(abs_q*t + theta) + B*e**(-beta * t) + K
 
 def get_dvdt(t, v_actual, v_0, u_0, I, p, abs_q, q2):
     """Calculates the derivative of v(t) given its current value"""
@@ -73,16 +83,17 @@ def get_dvdt(t, v_actual, v_0, u_0, I, p, abs_q, q2):
 
 def get_ut(t, v_0, s_0, u_0, I, p, abs_q, q2):
     """Calculates u(t) from initial conditions"""
-    s_cluster = C * s_0 / (p**2 - q2 - 2*p*beta + beta**2)
+    s_cluster = C * s_0 / ((p - beta)**2 - q2)
     I_cluster = C * I / (p**2 - q2)
-    part_c = -(s_cluster + I_cluster - u_0)
-    part_c *= e**(-p * t) * c(abs_q * t, p, abs_q, q2)
+    
+    part_c = u_0 - s_cluster - I_cluster
+    part_c *= e**(-p * t) * cos(abs_q * t)
 
-    part_s = s_cluster * p + I_cluster * (p - beta) - C * v_0 + (p - 1) * u_0
-    part_s *= -e**(-p * t) * s(abs_q * t, p, abs_q, q2) / abs_q
+    part_s = (s_cluster * (p - beta)) + (I_cluster * p) + ((p - 1)* u_0) - C*v_0
+    part_s *= e**(-p * t) * sin(abs_q * t) / abs_q
 
     part_beta = e**(-beta * t) * s_cluster
-    return part_c + part_s + part_beta + I_cluster
+    return part_c - part_s + part_beta + I_cluster
 
 ###For the upper bound of v
 ##def get_vt_upper(t, v_0, s_0, u_0, I):
@@ -140,7 +151,9 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
                          + (v_deriv**2 + 4*Maccel*(v_th - v_test))**0.5))
         except TypeError:
             #print(Mvelo, v_deriv, Maccel, v_test)
-            print(v_test, t_old)
+            print("Position error")
+            print("Time:", t_old)
+            print("Voltage:", v_test)
             print(counter)
             raise
         if m <= 0:
@@ -209,4 +222,4 @@ for x in range(1):#00):
     else:
         pass
 
-#Something wrong with cals somewhere
+#Something wrong with calcs somewhere
