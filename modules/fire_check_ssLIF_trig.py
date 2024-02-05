@@ -10,7 +10,7 @@ envelope, and treating it like the voltage function for the sLIF neurons.
 More to come
 """
 
-from math import pi, e
+from math import pi, e, ceil
 from numba import cuda
 
 from modules.general import Control
@@ -67,7 +67,7 @@ threads = lookup["threads"]
 p = 0.5*(D + 1)
 abs_q = abs(0.5*((D - 1)**2 - 4*C)**0.5)
 q2 = -abs_q**2
-period = 2*pi / abs_q
+#period = 2*pi / abs_q
 
     
 
@@ -109,44 +109,39 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
         u_0 = wigglage_d[n]
         I = input_strength_d[n]
 
-        T = Control.v.coeff_trig(v_0, s_0, u_0, I)
+        A = abs(Control.v.coeff_trig(v_0, s_0, u_0, I))
         B = Control.v.coeff_synapse(s_0)
         K = Control.v.coeff_const(I)
+        theta = Control.v.trig_phase(v_0, s_0, u_0, I)
         
         case = 0
         firing_time_d[n] = 0
         extreme_exists = False
         
         if v_0 > v_th:
-            #Trivial case A: neuron is already "firing"
+            #Trivial case: neuron is already firing
             case = 1
-            firing_time_d[n] = 0
             lower_bound_d[n] = 0
             upper_bound_d[n] = 0
         else:
             #No trivial non-firing case this time
             #First check if an extreme point exists
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            if (p == synapse_decay) or (B == 0) or (T*B >= 0):
+            if (p == synapse_decay) or (B == 0) or (A*B >= 0):
                 extreme_exists = False
             else:
                 extreme_exists = True
-                e_temp = -(p * T) / (synapse_decay * B)
-                extreme_time = cuda.libdevice.log(e_temp) / (p - synapse_decay)
+                #e_temp = -(p * T) / (synapse_decay * B)
+                extreme_time = cuda.libdevice.log(
+                    -(p * T) / (B * synapse_decay)) / (p - synapse_decay)
                 extreme_v = Control.v.get_vt_upper(extreme_time,
                                                    v_0, s_0, u_0, I)
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             #With that knowledge, determine different cases
             if extreme_exists:
-                if (extreme_v >= v_th) and (extreme_time > 0):
-                    #'Firing' case for maximum
-                    case = 2
-                    #firing_time_d[n] = 0
-                    #lower_bound_d[n] = 0
-                    #upper_bound_d[n] = extreme_time
-                elif (extreme_v < v_th) and (v_th < K):
-                    #Firing case for minimum
-                    #Still need to sort into sub-cases
+                if extreme_v < v_th and v_th < K:
+                    #Minimum below threshold, long-term limit goes over
+                    #Calculate inflection for subcases
                     # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                     inflect_time = cuda.libdevice.log(e_temp * p/synapse_decay) \
                                    / (p - synapse_decay)
@@ -154,74 +149,64 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
                                                        v_0, s_0, u_0, I)
                     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                     if inflect_time <= 0:
-                        case = 3
-                        #firing_time_d[n] = 0
-                        #lower_bound_d[n] = 0
+                        #Everything interesting happens before t=0
+                        case = 2
+                        lower_bound_d[n] = 0
                         #upper_bound_d[n] = ???
-                    elif inflect_v >= v_th:
-                        if extreme_time > 0:
-                            case = 4
-                            #firing_time_d[n] = inflect_time
-                            #lower_bound_d[n] = extreme_time
-                            #upper_bound_d[n] = inflect_time
-                        else:
-                            case = 5
-                            #firing_time_d[n] = inflect_time
-                            #lower_bound_d[n] = 0
-                            #upper_bound_d[n] = inflect_time
                     else:
-                        case = 6
-                        #firing_time_d[n] = inflect_time
-                        #lower_bound_d[n] = inflect_time
-                        #upper_bound_d[n] = ???
-                #Otherwise, not firing
-            elif (K > v_th) and (T + B != 0):
-                #Firing case for no extreme point
-                #First condition: long-term limit above the firing threshold
-                #Second condition: function isn't entirely flat
-                case = 7
-                temp = -cuda.libdevice.log((v_th - K)/(T + B))
-                firing_time_d[n] = temp
-                lower_bound_d[n] = temp
-                upper_bound_d[n] = temp + period
+                        if inflect_v < v_th:
+                            #Inflection time is a lower bound
+                            case = 3
+                            lower_bound_d[n] = inflection_time
+                            #upper_bound_d[n] = ???
+                        elif extreme_time > 0:
+                            #Extreme time is a lower bound
+                            #Inflection time is an upper bound
+                            case = 4
+                            lower_bound_d[n] = extreme_time
+                            upper_bound_d[n] = inflection_time
+                        else:
+                            #Extreme time is before 0
+                            #Inflection time is still an upper bound
+                            case = 5
+                            lower_bound_d[n] = 0
+                            upper_bound_d[n] = inflection_time
+                        if A+B+K > v_th:
+                            #Envelope starts above threshold, then drops below
+                            #So there are two windows to search
+                            lower_bound_d[n] = 0
+                            #Just set the lower bound to 0 and it's fine
+                elif A+B+K > v_th:
+                    #Envelope starts above threshold
+                    #No funny business with going below then back above
+                    case = 6
+                    lower_bound_d[n] = 0
+                    upper_bound_d[n] = 0
+                elif extreme_v > v_th and extreme_time > 0:
+                    #Envelope starts below threshold
+                    #Extreme point is a maximum
+                    #Extreme point has not yet occurred
+                    case = 7
+                    lower_bound_d[n] = 0
+                    upper_bound_d[n] = extreme_time
+                #else: no firing
+            elif A+B+K > v_th:
+                #No extreme, start above threshold
+                case = 6
+                lower_bound_d[n] = 0
+                upper_bound_d[n] = 0
+            elif K > v_th:
+                #No extreme, start below threshold, long term limit goes over
+                case = 2
+                lower_bound_d[n] = 0
+                #upper_bound_d[n] = ???
+            #In any other case: no firing
 
-        if case > 0:
-            #Doing a single round of Newton-Raphson to improve bounds
-            #NR init = 0 = lower bound: 2, 3
-            #NR init = 0 = upper bound: none
-            #NR init = t_i = lower bound: 6
-            #NR init = t_i = upper bound: 4, 5
-            fire_flag_d[n] = 1
-            if case in (4, 5, 6):
-                alt_inflect = inflect_time + (v_th - inflect_v) \
-                           / Control.v.get_dvdt_upper(inflect_time,
-                                                      v_0, s_0, u_0, I)
+            #Now start processing cases
+            if case > 0:
+                fire_flag_d[n] = 1
             if case in (2, 3):
-                alt_zero = (v_th - v_0) / Control.v.get_dvdt_upper(0, v_0, s_0,
-                                                                   u_0, I)
-            #Now to fill in the values of arrays per case
-            #Case 1 has already been handled as trivial (and values not shared)
-            #As has case 7
-            #Newton-Raphson initial conditions:
-            if case in (2, 3):
-                firing_time_d[n] = alt_zero
-            elif case in (4, 5, 6):
-                firing_time_d[n] = alt_inflect         
-            #Lower bounds:
-            if case in (2, 3, 5, 7):
-                lower_bound_d[n] = alt_zero
-            elif case == 4:
-                lower_bound_d[n] = extreme_time
-            elif case == 6:
-                lower_bound_d[n] = alt_inflect
-            #Upper bounds:
-            if case == 2:
-                upper_bound_d[n] = extreme_time
-            elif case in (4, 5):
-                upper_bound_d[n] = alt_inflect
-            elif case in (3, 6):
                 #Blindly jump forward exponentially until you get an upper bound
-                #Might improve your lower bound for ~free
                 m = 0
                 while True:
                     test_t = 2**m
@@ -230,11 +215,14 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
                                                           v_0, s_0, u_0, I)
                         if temp_v > v_th:
                             upper_bound_d[n] = test_t
-                            if (m != 0) and (test_t / 2 > lower_bound_d[n]):
-                                lower_bound_d[n] = test_t / 2
                             break
                     m += 1
-            #Make allowance for the oscillation period
-            upper_bound_d[n] += period
+            if case > 1:
+                #Update the upper bound to account for the oscillation period
+                upper_bound_d[n] = (2 * pi * ceil((abs_q * upper_bound_d[n]
+                                                   + theta) / (2*pi) )
+                                    - theta)/|q|
+                
+            
 
 
