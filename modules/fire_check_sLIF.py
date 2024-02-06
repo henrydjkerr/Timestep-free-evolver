@@ -101,23 +101,28 @@ def fire_check_device(voltage_d, synapse_d, input_strength_d, fire_flag_d,
                         #Find the extreme time
                         extreme_time = 1/(1 - synapse_decay) \
                                        * cuda.libdevice.log(e_gradient)
-                        extreme_v = Control.v.get_vt(extreme_time, v_0, s_0, I)
+                        if extreme_time >= 0:
+                            #Don't want to do e**(+ve) to avoid OverflowError
+                            extreme_v = Control.v.get_vt(extreme_time,
+                                                         v_0, s_0, I)
                 else:
                     #Case synapse_decay ~= 1
                     #Already ruled out lack of extreme point by s_0 != 0
                     extreme_exists = True
                     extreme_time = 1 - (v_0 - I)/s_0
-                    extreme_v = Control.v.get_vt(extreme_time, v_0, s_0, I)
+                    if extreme_time >= 0:
+                        #Don't want to do e**(+ve) to avoid OverflowError
+                        extreme_v = Control.v.get_vt(extreme_time, v_0, s_0, I)
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             #With that knowledge, determine different cases
             if extreme_exists:
-                if (extreme_v >= v_th) and (extreme_time > 0):
+                if extreme_time > 0 and extreme_v >= v_th:
                     #Firing case for maximum
                     case = 2
                     #firing_time_d[n] = 0
                     #lower_bound_d[n] = 0
                     #upper_bound_d[n] = extreme_time
-                elif (extreme_v < v_th) and (v_th < I):
+                elif I > v_th:
                     #Firing case for minimum
                     #Still need to sort into sub-cases
                     # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,7 +132,8 @@ def fire_check_device(voltage_d, synapse_d, input_strength_d, fire_flag_d,
                                        * cuda.libdevice.log(e_inflect)
                     else:
                         inflect_time = extreme_time + 1
-                    inflect_v = Control.v.get_vt(inflect_time, v_0, s_0, I)
+                    if inflect_time >= 0:
+                        inflect_v = Control.v.get_vt(inflect_time, v_0, s_0, I)
                     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                     if inflect_time <= 0:
                         case = 3
