@@ -83,40 +83,33 @@ def fire_check(arrays):
     fire_flag_d = arrays["fire_flag"]
     lower_bound_d = arrays["lower_bound"]
     upper_bound_d = arrays["upper_bound"]
-    firing_time_d = arrays["firing_time"]
     fire_check_device[blocks, threads](voltage_d, synapse_d, wigglage_d,
                                        input_strength_d,
                                        fire_flag_d, lower_bound_d,
-                                       upper_bound_d, firing_time_d)
+                                       upper_bound_d)
 
 @cuda.jit()
 def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
-                      fire_flag_d, lower_bound_d, upper_bound_d, firing_time_d):
+                      fire_flag_d, lower_bound_d, upper_bound_d):
     """
     Checks whether the neuron can fire and records firing bounds.
     We use the firing_time_d to hold the start point for a non-interval-type
     root-finding scheme.
 
     Expects arrays: voltage, synapse, wigglage, input_strength, fire_flag,
-    lower_bound, upper_bound, firing_time
+    lower_bound, upper_bound
     """
     
     n = cuda.grid(1)
     if n < neurons_number:
-        fire_flag_d[n] = 0
         v_0 = voltage_d[n]
         s_0 = synapse_d[n]
         u_0 = wigglage_d[n]
         I = input_strength_d[n]
 
-        A = abs(Control.v.coeff_trig(v_0, s_0, u_0, I))
-        B = Control.v.coeff_synapse(s_0)
-        K = Control.v.coeff_const(I)
-        theta = Control.v.trig_phase(v_0, s_0, u_0, I)
-        
         case = 0
-        firing_time_d[n] = 0
         extreme_exists = False
+        fire_flag_d[n] = 0
         
         if v_0 > v_th:
             #Trivial case: neuron is already firing
@@ -127,102 +120,91 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             #No trivial non-firing case this time
             #First check if an extreme point exists
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            A = abs(Control.v.coeff_trig(v_0, s_0, u_0, I))
+            B = Control.v.coeff_synapse(s_0)
+            K = Control.v.coeff_const(I)
             if (p == synapse_decay) or (B == 0) or (A*B >= 0):
                 extreme_exists = False
             else:
                 extreme_exists = True
-                #e_temp = -(p * T) / (synapse_decay * B)
-                extreme_time = cuda.libdevice.log(
-                    -(p * T) / (B * synapse_decay)) / (p - synapse_decay)
+                extreme_time = cuda.libdevice.log(-(p * A) /
+                                                  (B * synapse_decay)) \
+                                    / (p - synapse_decay)
                 extreme_v = Control.v.get_vt_upper(extreme_time,
                                                    v_0, s_0, u_0, I)
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             #With that knowledge, determine different cases
-            if extreme_exists:
-                if extreme_v < v_th and v_th < K:
-                    #Minimum below threshold, long-term limit goes over
-                    #Calculate inflection for subcases
-                    # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                    inflect_time = cuda.libdevice.log(e_temp * p/synapse_decay) \
-                                   / (p - synapse_decay)
-                    inflect_v = Control.v.get_vt_upper(inflect_time,
-                                                       v_0, s_0, u_0, I)
-                    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                    if inflect_time <= 0:
-                        #Everything interesting happens before t=0
-                        case = 2
-                        lower_bound_d[n] = 0
-                        #upper_bound_d[n] = ???
-                    else:
-                        if inflect_v < v_th:
-                            #Inflection time is a lower bound
-                            case = 3
-                            lower_bound_d[n] = inflection_time
-                            #upper_bound_d[n] = ???
-                        elif extreme_time > 0:
-                            #Extreme time is a lower bound
-                            #Inflection time is an upper bound
-                            case = 4
-                            lower_bound_d[n] = extreme_time
-                            upper_bound_d[n] = inflection_time
-                        else:
-                            #Extreme time is before 0
-                            #Inflection time is still an upper bound
-                            case = 5
-                            lower_bound_d[n] = 0
-                            upper_bound_d[n] = inflection_time
-                        if A+B+K > v_th:
-                            #Envelope starts above threshold, then drops below
-                            #So there are two windows to search
-                            lower_bound_d[n] = 0
-                            #Just set the lower bound to 0 and it's fine
-                elif A+B+K > v_th:
-                    #Envelope starts above threshold
-                    #No funny business with going below then back above
-                    case = 6
+            if A+B+K > v_th:
+                if extreme_exists and extreme_time > 0 and extreme_v < v_th and K > v_th:
+                    #Special case for where there are two crossing intervals
+                    case = 3
+                    #lower_bound_d[n] = 0
+                    #upper_bound depends on the inflection point
+                else:
+                    #For any other case you just take the initial interval
+                    case = 2
                     lower_bound_d[n] = 0
                     upper_bound_d[n] = 0
-                elif extreme_v > v_th and extreme_time > 0:
-                    #Envelope starts below threshold
-                    #Extreme point is a maximum
-                    #Extreme point has not yet occurred
-                    case = 7
+            elif extreme_exists:
+                #Cases where A+B+K < v_th and you have an extreme point
+                if extreme_time > 0 and extreme_v > v_th:
+                    #There is a maximum that takes you over the threshold
                     lower_bound_d[n] = 0
                     upper_bound_d[n] = extreme_time
-                #else: no firing
-            elif A+B+K > v_th:
-                #No extreme, start above threshold
-                case = 6
-                lower_bound_d[n] = 0
-                upper_bound_d[n] = 0
+                elif K > v_th:
+                    #Since we know A+B+K < v_th, this isn't a maximum
+                    #So this covers all other minima
+                    case = 4
+                    #Both bounds depend on inflection point
             elif K > v_th:
-                #No extreme, start below threshold, long term limit goes over
-                case = 2
+                #No extreme, don't start above v_th, but long term limit goes over
+                case = 5
                 lower_bound_d[n] = 0
-                #upper_bound_d[n] = ???
+                #upper_bound has to be brute-forced
             #In any other case: no firing
 
-            #Now start processing cases
-            if case > 0:
-                fire_flag_d[n] = 1
-            if case in (2, 3):
-                #Blindly jump forward exponentially until you get an upper bound
-                m = 0
-                while True:
-                    test_t = 2**m
-                    if test_t > lower_bound_d[n]:
-                        temp_v = Control.v.get_dvdt_upper(test_t,
-                                                          v_0, s_0, u_0, I)
-                        if temp_v > v_th:
-                            upper_bound_d[n] = test_t
-                            break
-                    m += 1
-            if case > 1:
-                #Update the upper bound to account for the oscillation period
-                upper_bound_d[n] = (2 * pi * ceil((abs_q * upper_bound_d[n]
-                                                   + theta) / (2*pi) )
-                                    - theta)/|q|
-                
+        #Now start processing cases
+        if case > 0:
+            fire_flag_d[n] = 1
+        if case in (3, 4):
+            #Need to sort out stuff about the inflection point for minima
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            inflect_time = cuda.libdevice.log(-(p**2 * A)
+                                              / (synapse_decay**2 * B)) \
+                           / (p - synapse_decay)
+            if inflect_time > 0:
+                inflect_v = Control.v.get_vt_upper(inflect_time,
+                                                   v_0, s_0, u_0, I)
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            if inflect_time <= 0:
+                lower_bound_d[n] = 0
+                case = 5
+            elif inflect_v < v_th:
+                lower_bound_d[n] = inflect_time * (case - 3)
+                case = 5
+            elif extreme_time < 0:
+                lower_bound_d[n] = 0
+                upper_bound_d[n] = inflect_time
+            else:
+                lower_bound_d[n] = extreme_time * (case - 3)
+                upper_bound_d[n] = inflect_time
+        if case in (2, 3):
+            #Blindly jump forward exponentially until you get an upper bound
+            m = 0
+            while True:
+                test_t = 2**m
+                if test_t > lower_bound_d[n]:
+                    temp_v = Control.v.get_vt_upper(test_t, v_0, s_0, u_0, I)
+                    if temp_v > v_th:
+                        upper_bound_d[n] = test_t
+                        break
+                m += 1
+        if case > 1:
+            #Update the upper bound to account for the oscillation period
+            theta = Control.v.trig_phase(v_0, s_0, u_0, I)
+            upper_bound_d[n] = (2 * pi * ceil((abs_q * upper_bound_d[n]
+                                            + theta) / (2*pi) ) - theta)/abs_q
+    return
             
 
 
