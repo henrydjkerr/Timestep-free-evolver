@@ -45,8 +45,10 @@ def part_c(v_0, s_0, u_0, I):
 
 @cuda.jit(device = True)
 def part_s(v_0, s_0, u_0, I):
-    return -((s_0 * (p**2 + q2 - p*(beta + 1) + beta)) \
-           + (I * (p**2 + q2 - p) / (p**2 - q2) + v_0 * (1 - p) + u_0) / abs_q)
+    value = s_0 * (p**2 + q2 - p*(beta + 1) + beta) / ((p - beta)**2 - q2)
+    value += I * (p**2 + q2 - p) / (p**2 - q2) + v_0 * (1 - p) + u_0
+    value /= -abs_q
+    return value
 
 @cuda.jit(device = True)
 def coeff_trig(v_0, s_0, u_0, I):
@@ -81,7 +83,7 @@ def coeff_synapse(s_0):
 @cuda.jit(device = True)
 def coeff_const(I):
     #Long term limit in the true voltage equation
-    return I * (2*p - 1) / (p*2 - q2)
+    return I * (2*p - 1) / (p**2 - q2)
 
 #------------------------------------------------------------------------------
 
@@ -94,41 +96,42 @@ def get_vt(t, v_0, s_0, u_0, I):
     theta = trig_phase(v_0, s_0, u_0, I)
     B = coeff_synapse(s_0)
     K = coeff_const(I)
-    return T*e**(-p * t)*c(abs_q*t + theta) + B*e**(-beta * t) + K
+    return T*(e**(-p * t))*c(abs_q*t + theta) + B*e**(-beta * t) + K
 
 @cuda.jit(device = True)
-def get_dvdt(t, v_actual, v_0, u_0, I):
+def get_dvdt(t, v_actual, v_0, s_0, u_0, I):
     """Calculates the derivative of v(t) given its current value"""
     u_actual = get_ut(t, v_0, s_0, u_0, I)
-    return I - v_actual - u_actual + s_0*e**(-beta * t) + I
+    return I - v_actual - u_actual + s_0*e**(-beta * t)
 
 @cuda.jit(device = True)
 def get_ut(t, v_0, s_0, u_0, I):
     """Calculates u(t) from initial conditions"""
-    s_cluster = C * s_0 / (p**2 - q2 - 2*p*beta + beta**2)
+    s_cluster = C * s_0 / ((p - beta)**2 - q2)
     I_cluster = C * I / (p**2 - q2)
-    part_c = -(s_cluster + I_cluster - u_0)
+    
+    part_c = u_0 - s_cluster - I_cluster
     part_c *= e**(-p * t) * c(abs_q * t)
 
-    part_s = s_cluster * p + I_cluster * (p - beta) - C * v_0 + (p - 1) * u_0
-    part_s *= -e**(-p * t) * s(abs_q * t) / abs_q
+    part_s = (s_cluster * (p - beta)) + (I_cluster * p) + ((p - 1)* u_0) - C*v_0
+    part_s *= e**(-p * t) * s(abs_q * t) / abs_q
 
     part_beta = e**(-beta * t) * s_cluster
-    return part_c + part_s + part_beta + I_cluster
+    return part_c - part_s + part_beta + I_cluster
 
 #For the upper bound of v
 @cuda.jit(device = True)
 def get_vt_upper(t, v_0, s_0, u_0, I):
     """Calculates the upper bound on v(t) given by setting cos = 1"""
-    T = coeff_trig(v_0, s_0, u_0, I)
+    A = coeff_trig(v_0, s_0, u_0, I)
     B = coeff_synapse(s_0)
     K = coeff_const(I)
-    return T*e**(-p * t) + B*e**(-beta * t) + K
+    return A*e**(-p * t) + B*e**(-beta * t) + K
 
 @cuda.jit(device = True)
 def get_dvdt_upper(t, v_0, s_0, u_0, I):
     """Calculates the derivative of the upper bound on v(t)"""
-    T = coeff_trig(v_0, s_0, u_0, I)
+    A = coeff_trig(v_0, s_0, u_0, I)
     B = coeff_synapse(s_0)
-    return -(p * T*e**(-p * t) + beta * B*e**(-beta * t))
+    return -(p * A*e**(-p * t) + beta * B*e**(-beta * t))
     
