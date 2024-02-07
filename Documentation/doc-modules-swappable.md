@@ -12,10 +12,26 @@ Modules are grouped by the name they are bound to in existing modules.  At prese
 These modules perform the task of determining whether a given neuron will attain its firing condition without further input.  If the neuron will fire, the associated position in the flag array is set to true, and upper and lower bounds on the firing time are calculated. Otherwise, the flag is set to false.
 
 
-## fire_check_maybe1.py
-Wrapper module for use with the synaptic LIF (sLIF) model.  The equations have a singularity when the paramater `synapse_decay = 1`, so it's necessary to have separate code to avoid a division-by-zero error in this special case.
+## fire_check_sLIF.py
+For use with the synaptic LIF (sLIF) model.  
 
-Imports and binds the `fire_check` function from `fire_check_is1` if `synapse_decay` is in the interval (0.999, 1.001), or from `fire_check_not1` otherwise.
+The desired outcome is to find an interval in which the first time $t > 0$ at which $v(t) \geq v_{th}$ is achieved, and to find a point from which the Newton-Raphson root-finding method will converge to that value of $t$.  This is achieved by characterising the form of $v$ by its initial value, long-term limit and any extreme or inflection points to produce a comprehensive set of cases.
+
+The equation for $v$ is
+$$v(t) = I + \frac{s_0}{1 - \beta}e^{-\beta t} + \bigg(v_0 - I - \frac{s_0}{1 - \beta}\bigg)e^{-t},$$
+where $v_0 = v(0)$, $s_0 = s(0)$ and $\beta =$ `synapse_decay`.  This has a singularity when $\beta = 1$, instead giving equation
+$$v(t) = I + s_0 t e^{-t} + (v_0 - I)e^{-t},$$
+but the equation has the same shape and characteristics we need.  Additionally, in certain cases the extreme points occur at a large negative value of $t$; to avoid overflow errors when calculating the exponentials, we restrict calculation of $v(t)$ to $[0, \infty)$.
+
+The decision flow for our cases is as such:
+1. If $v_0 \geq v_{th}$, set the interval to $[0,0]$ and the Newton-Raphson initial condition to $0$.
+2. Else if $I \leq v_{th}$ and $s_0 \leq 0$, there is no firing event, so quit with no result.
+3. Else:
+  1. Determine if there is an extreme point of $v$. If there is, determine the time $t_e$.  If $t_e \geq 0$, determine $v(t_e) = v_e$.
+  2. 
+
+
+
 
 
 ## fire_check_not1.py
