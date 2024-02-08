@@ -1,6 +1,6 @@
 from math import pi, e, cos, sin, cosh, sinh, atan, atanh, log, ceil
 import random
-
+import time
 
 
 #------------------------------------------------------------------------------
@@ -98,14 +98,14 @@ def get_ut(t, v_0, s_0, u_0, I):
 #For the upper bound of v
 def get_vt_upper(t, v_0, s_0, u_0, I):
     """Calculates the upper bound on v(t) given by setting cos = 1"""
-    A = coeff_trig(v_0, s_0, u_0, I)
+    A = abs(coeff_trig(v_0, s_0, u_0, I))
     B = coeff_synapse(s_0)
     K = coeff_const(I)
     return A*e**(-p * t) + B*e**(-beta * t) + K
 
 def get_dvdt_upper(t, v_0, s_0, u_0, I):
     """Calculates the derivative of the upper bound on v(t)"""
-    A = coeff_trig(v_0, s_0, u_0, I)
+    A = abs(coeff_trig(v_0, s_0, u_0, I))
     B = coeff_synapse(s_0)
     return -(p * A*e**(-p * t) + beta * B*e**(-beta * t))
 
@@ -145,6 +145,7 @@ def fire_check(v_0, s_0, u_0, I):
             if extreme_time >= 0:
                 #Conditional so we don't get OverflowErrors
                 extreme_v = get_vt_upper(extreme_time, v_0, s_0, u_0, I)
+
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         #With that knowledge, determine different cases
         if A+B+K > v_th:
@@ -162,6 +163,7 @@ def fire_check(v_0, s_0, u_0, I):
             #Cases where A+B+K < v_th and you have an extreme point
             if extreme_time > 0 and extreme_v > v_th:
                 #There is a maximum that takes you over the threshold
+                case = 2
                 lower_bound = 0
                 upper_bound = extreme_time
             elif K > v_th:
@@ -235,19 +237,33 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
     A = coeff_trig(v_0, s_0, u_0, I)
     B = coeff_synapse(s_0)
     #Calculate upper bounds on derivatives
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * start_time) \
             + max(-synapse_decay * B * e**(-synapse_decay * start_time),
                   -synapse_decay * B * e**(-synapse_decay * end_time))
-    Maccel = max(abs(A * (p**4 + abs_q**4)**0.5) * e**(-p * start_time) \
-                 + max(synapse_decay**2 * B * e**(-synapse_decay * start_time),
-                       synapse_decay**2 * B * e**(-synapse_decay * end_time)),
-                 0)
+##    Maccel = max(abs(A * (p**4 + abs_q**4)**0.5) * e**(-p * start_time) \
+##                 + max(synapse_decay**2 * B * e**(-synapse_decay * start_time),
+##                       synapse_decay**2 * B * e**(-synapse_decay * end_time)),
+##                 0)
     if Mvelo <= 0:
         return (False, 0, 0)
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     #Start iterations
+    #print(Mvelo, Maccel)
     t_old = start_time
     counter = 0
-    for count in range(100):
+    for count in range(1000):
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+##        Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * t_old) \
+##                + max(-synapse_decay * B * e**(-synapse_decay * t_old),
+##                      -synapse_decay * B * e**(-synapse_decay * end_time))
+        Maccel = max(abs(A * (p**4 + abs_q**4)**0.5) * e**(-p * t_old) \
+                     + max(synapse_decay**2 * B * e**(-synapse_decay * t_old),
+                           synapse_decay**2 * B * e**(-synapse_decay * end_time)),
+                 0)
+##        if Mvelo <= 0:
+##            return (False, t_old, counter)
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         counter += 1
         v_test = get_vt(t_old, v_0, s_0, u_0, I)
         v_deriv = get_dvdt(t_old, v_test, s_0, u_0, I)
@@ -265,7 +281,7 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
             print("M:", Mvelo)
             print("M':", Maccel)
             print("v_deriv:", v_deriv)
-            print(counter)
+            print("Iterations:", counter)
             raise
         if m <= 0:
             return (False, t_old, counter)
@@ -277,6 +293,14 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
         else:
             t_old = t_new
     #Currently silently failing if it takes too many iterations
+##    print("too many iterations")
+##    print("Time:", t_old)
+##    print("Voltage:", v_test)
+##    print("M:", Mvelo)
+##    print("M':", Maccel)
+##    print("v_deriv:", v_deriv)
+##    print(counter)
+##    raise OverflowError
     return (False, t_new, counter)
 
 
@@ -326,6 +350,23 @@ C = 0.30041492031562556
 D = 1.9667230932557858
 beta = 1.21306163732562
 
+#Now testing for why some things don't converge
+v_0 = -0.5180116594868698
+s_0 = -1.7183102990180616
+u_0 = 1.4833584215619702
+I = 0.8058996560587008
+beta = 2.8515476604235435
+C = 1.622501913545989
+D = 3.3747412316766234
+
+v_0 = -0.5344216674595554
+s_0 = 2.6320532631604756
+u_0 = 1.8376515726025984
+I = 1.1992006037229164
+C = 0.21701322110312685
+D = 1.2876136046959845
+beta = 1.4181985425471741
+
 synapse_decay = beta
 p = 0.5*(D+1)
 q2 = 0.25 * ((D - 1)**2 - 4*C)
@@ -340,13 +381,16 @@ test_mode = False
 if test_mode:
     loop_count = 1
 else:
-    loop_count = 10000
+    loop_count = 1000000
 
 true_count = 0
 true_iters = 0
 false_count = 0
 false_iters = 0
+false_results = []
+valid_cases = 0
 
+stopwatch = time.time()
 for x in range(loop_count):
     if not test_mode:
         beta = random.uniform(1.1, 4.1)
@@ -357,6 +401,7 @@ for x in range(loop_count):
     q2 = 0.25 * ((D - 1)**2 - 4*C)
     abs_q = abs(q2**0.5)
     if q2 < 0:
+        valid_cases += 1
         if not test_mode:
             v_0 = random.uniform(-1, 1)
             s_0 = random.uniform(-3, 3)
@@ -383,13 +428,19 @@ for x in range(loop_count):
             else:
                 false_count +=1
                 false_iters += result[2]
+                if result[2] == loop_count:
+                    false_results.append(coeff_const(I))
+                #false_results.append(result[1:])
         else:
             #false_count += 1
             pass
     else:
         pass
 
+print("Time taken:", time.time() - stopwatch)
 if true_count > 0:
     print("Average iterations to root:", true_iters/true_count)
 if false_count > 0:
     print("Average iterations to no root:", false_iters/false_count)
+print("Total cases evaluated:", valid_cases)
+print("Cases progressing beyond fire_check:", true_count + false_count)

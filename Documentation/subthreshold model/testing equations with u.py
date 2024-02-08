@@ -59,6 +59,23 @@ C = 0.30041492031562556
 D = 1.9667230932557858
 beta = 1.21306163732562
 
+#Now testing for why some things don't converge
+v_0 = -0.5180116594868698
+s_0 = -1.7183102990180616
+u_0 = 1.4833584215619702
+I = 0.8058996560587008
+beta = 2.8515476604235435
+C = 1.622501913545989
+D = 3.3747412316766234
+
+v_0 = -0.5344216674595554
+s_0 = 2.6320532631604756
+u_0 = 1.8376515726025984
+I = 1.1992006037229164
+C = 0.21701322110312685
+D = 1.2876136046959845
+beta = 1.4181985425471741
+
 v_values[0] = v_0
 u_values[0] = u_0
 
@@ -260,4 +277,5 @@ plt.plot(x_axis, y1_axis, c="#ff0000")  #  Red is v(t), Euler
 plt.plot(x_axis, y2_axis, c="#009900")  #Green is u(t), Euler
 plt.scatter(x_axis, y3_axis, c="#000000")
 plt.scatter(x_axis, y4_axis, c="#000000")
+plt.axhline(1, linestyle="dashed", c="#0022cc")
 plt.show()
