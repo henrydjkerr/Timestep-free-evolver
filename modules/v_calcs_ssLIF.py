@@ -123,7 +123,7 @@ def get_ut(t, v_0, s_0, u_0, I):
 @cuda.jit(device = True)
 def get_vt_upper(t, v_0, s_0, u_0, I):
     """Calculates the upper bound on v(t) given by setting cos = 1"""
-    A = coeff_trig(v_0, s_0, u_0, I)
+    A = abs(coeff_trig(v_0, s_0, u_0, I))
     B = coeff_synapse(s_0)
     K = coeff_const(I)
     return A*e**(-p * t) + B*e**(-beta * t) + K
@@ -131,7 +131,7 @@ def get_vt_upper(t, v_0, s_0, u_0, I):
 @cuda.jit(device = True)
 def get_dvdt_upper(t, v_0, s_0, u_0, I):
     """Calculates the derivative of the upper bound on v(t)"""
-    A = coeff_trig(v_0, s_0, u_0, I)
+    A = abs(coeff_trig(v_0, s_0, u_0, I))
     B = coeff_synapse(s_0)
     return -(p * A*e**(-p * t) + beta * B*e**(-beta * t))
     
