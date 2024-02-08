@@ -149,6 +149,7 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
                 #Cases where A+B+K < v_th and you have an extreme point
                 if extreme_time > 0 and extreme_v > v_th:
                     #There is a maximum that takes you over the threshold
+                    case = 2
                     lower_bound_d[n] = 0
                     upper_bound_d[n] = extreme_time
                 elif K > v_th:
