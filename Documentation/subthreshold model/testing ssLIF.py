@@ -1,6 +1,8 @@
 from math import pi, e, cos, sin, cosh, sinh, atan, atanh, log, ceil
 import random
 import time
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 #------------------------------------------------------------------------------
@@ -238,15 +240,15 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
     B = coeff_synapse(s_0)
     #Calculate upper bounds on derivatives
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * start_time) \
-            + max(-synapse_decay * B * e**(-synapse_decay * start_time),
-                  -synapse_decay * B * e**(-synapse_decay * end_time))
+##    Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * start_time) \
+##            + max(-synapse_decay * B * e**(-synapse_decay * start_time),
+##                  -synapse_decay * B * e**(-synapse_decay * end_time))
 ##    Maccel = max(abs(A * (p**4 + abs_q**4)**0.5) * e**(-p * start_time) \
 ##                 + max(synapse_decay**2 * B * e**(-synapse_decay * start_time),
 ##                       synapse_decay**2 * B * e**(-synapse_decay * end_time)),
 ##                 0)
-    if Mvelo <= 0:
-        return (False, 0, 0)
+##    if Mvelo <= 0:
+##        return (False, 0, 0)
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     #Start iterations
     #print(Mvelo, Maccel)
@@ -254,20 +256,21 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
     counter = 0
     for count in range(1000):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-##        Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * t_old) \
-##                + max(-synapse_decay * B * e**(-synapse_decay * t_old),
-##                      -synapse_decay * B * e**(-synapse_decay * end_time))
+        Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * t_old) \
+                + max(-synapse_decay * B * e**(-synapse_decay * t_old),
+                      -synapse_decay * B * e**(-synapse_decay * end_time))
         Maccel = max(abs(A * (p**4 + abs_q**4)**0.5) * e**(-p * t_old) \
                      + max(synapse_decay**2 * B * e**(-synapse_decay * t_old),
                            synapse_decay**2 * B * e**(-synapse_decay * end_time)),
                  0)
-##        if Mvelo <= 0:
-##            return (False, t_old, counter)
+        if Mvelo <= 0:
+            return (False, t_old, counter)
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         counter += 1
         v_test = get_vt(t_old, v_0, s_0, u_0, I)
         v_deriv = get_dvdt(t_old, v_test, s_0, u_0, I)
         try:
+            #print(counter, t_old)
             m = min(Mvelo,
                     0.5*(v_deriv \
                          + (v_deriv**2 + 4*Maccel*(v_th - v_test))**0.5))
@@ -367,6 +370,14 @@ C = 0.21701322110312685
 D = 1.2876136046959845
 beta = 1.4181985425471741
 
+v_0 = 0.042498500556758634
+s_0 = 1.9969879510064343
+u_0 = -1.7110931247830903
+I = 1.1481576391935455
+C = 3.7332053912579606
+D = 4.854644992605482
+beta = 2.8530325284973057
+
 synapse_decay = beta
 p = 0.5*(D+1)
 q2 = 0.25 * ((D - 1)**2 - 4*C)
@@ -389,6 +400,8 @@ false_count = 0
 false_iters = 0
 false_results = []
 valid_cases = 0
+
+iter_hist = np.zeros(1000)
 
 stopwatch = time.time()
 for x in range(loop_count):
@@ -422,6 +435,7 @@ for x in range(loop_count):
             result = find_firing_time(v_0, s_0, u_0, I, lower_bound, upper_bound)
         #print("Fired: {}, at time: {}, number of iterations: {}".format(
         #    result[0], str(result[1])[:5], result[2]), "\n")
+            iter_hist[result[2]] += 1
             if result[0] == True:
                 true_count += 1
                 true_iters += result[2]
@@ -430,7 +444,7 @@ for x in range(loop_count):
                 false_iters += result[2]
                 if result[2] == loop_count:
                     false_results.append(coeff_const(I))
-                #false_results.append(result[1:])
+                false_results.append(result[1:])
         else:
             #false_count += 1
             pass
@@ -444,3 +458,9 @@ if false_count > 0:
     print("Average iterations to no root:", false_iters/false_count)
 print("Total cases evaluated:", valid_cases)
 print("Cases progressing beyond fire_check:", true_count + false_count)
+
+plt.figure()
+x_axis = np.arange(1000)
+y_axis = iter_hist
+plt.plot(x_axis, y_axis, c="#000000")
+plt.show()
