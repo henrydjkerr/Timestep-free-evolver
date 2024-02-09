@@ -81,4 +81,4 @@ In brief, rather than extrapolating the derivative of the current point each ite
 
 The arrays required are named by the dictionary keys: voltage, synapse, wigglage, input_strength, fire_flag, lower_bound, upper_bound, firing_time.
 
-`find_firing_time_device(voltage, synapse, wigglage, input_strength, fire_flag, lower_bound, upper_bound, firing_time)`: for the given neuron index `n`, if `fire_flag[n] == True`, execute the modifiied Newton-Raphson scheme to numerically find a solution to $v(t) = v_{th}$ for $t > 0$ and store it in the array `firing_time[n]`.  If no such value is found between `lower_bound[n]` and `upper_bound[n]`, set `fire_flag[n] = False` instead.
+`find_firing_time_device(voltage, synapse, wigglage, input_strength, fire_flag, lower_bound, upper_bound, firing_time)`: for the given neuron index `n`, if `fire_flag[n] == True`, execute the modified Newton-Raphson scheme to numerically find a solution to $v(t) = v_{th}$ for $t > 0$ and store it in the array `firing_time[n]`.  If no such value is found between `lower_bound[n]` and `upper_bound[n]`, set `fire_flag[n] = False` instead.
