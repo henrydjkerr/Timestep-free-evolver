@@ -101,7 +101,7 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
     """
     
     n = cuda.grid(1)
-    if n < neurons_number:
+    if n < neurons_number:        
         v_0 = voltage_d[n]
         s_0 = synapse_d[n]
         u_0 = wigglage_d[n]
@@ -110,7 +110,17 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
         case = 0
         extreme_exists = False
         fire_flag_d[n] = 0
-        
+        lower_bound_d[n] = 0
+        upper_bound_d[n] = 0
+
+        #Hacking past this
+        if v_0 > 0.6:
+            fire_flag_d[n] = 1
+            lower_bound_d[n] = 0
+            upper_bound_d[n] = 1
+    return
+
+def blah():       
         if v_0 > v_th:
             #Trivial case: neuron is already firing
             case = 1
@@ -205,7 +215,7 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             theta = Control.v.trig_phase(v_0, s_0, u_0, I)
             upper_bound_d[n] = (2 * pi * ceil((abs_q * upper_bound_d[n]
                                             + theta) / (2*pi) ) - theta)/abs_q
-    return
+    #return
             
 
 
