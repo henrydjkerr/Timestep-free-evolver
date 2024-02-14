@@ -22,13 +22,13 @@ Dimensions
 ==========
 |Number of neurons in each grid dimension
 |If the number is 1 or less, that dimension will be neglected
-neuron_count_x:100
-neuron_count_y:100
+neuron_count_x:2000
+neuron_count_y:1
 neuron_count_z:1
 
 |Spacing between neurons in each dimension
 |Should be non-negative
-dx:0.1
+dx:0.01
 dy:0.1
 dz:1
 
@@ -54,7 +54,7 @@ v_th:1
 
 |Don't set this to 1 (or almost 1) for now or else you'll get divide-by-zero errors
 |Should be non-negative
-synapse_decay:2
+synapse_decay:4
 |How small (synapse_decay - 1) is allowed to get before you swap to 
 |special equations
 decay_tolerance: 0.00001
@@ -63,9 +63,9 @@ decay_tolerance: 0.00001
 Connection strength options
 ===========================
 #Difference of normal curves
-normal_strength_e:0.8
+normal_strength_e:4
 normal_sigma_e:1
-normal_strength_i:0.4
+normal_strength_i:4
 normal_sigma_i:2
 
 #Difference of exponentials
@@ -98,5 +98,5 @@ Subthreshold stuff
 ==================
 Still need proper names for these
 C:2
-D:1
+D:2
 
