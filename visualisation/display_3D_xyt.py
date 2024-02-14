@@ -27,7 +27,7 @@ def make_graph(filename):
     ax.set_ylim(-y_range/2, y_range/2)
     ax.set_zlim(0, max_t)
 
-    plt.title("10000 neurons, 20000 spikes, 2D")
+    plt.title("Placeholder title")
     plt.show()
 
 if __name__ == "__main__":

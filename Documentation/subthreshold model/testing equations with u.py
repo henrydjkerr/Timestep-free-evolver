@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from math import e, cos, sin, cosh, sinh, atan
 
 steps = 50000
-length = 5
+length = 25
 
 delta = length/steps
 t_values = np.arange(0, length, delta)
@@ -83,6 +83,14 @@ I = 1.1481576391935455
 C = 3.7332053912579606
 D = 4.854644992605482
 beta = 2.8530325284973057
+
+v_0 = -0.8013465358224463
+s_0 = -2.444000732541551
+u_0 = -0.3025519877746179
+I = 1.166547463700633
+C = 0.2864249771067044
+D = 1.903165304013408
+beta = 1.1831014351494835
 
 v_values[0] = v_0
 u_values[0] = u_0
