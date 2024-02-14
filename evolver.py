@@ -28,10 +28,10 @@ stopwatch = time.time()
 
 from numba import cuda
 import numpy
-from numpy.random import default_rng
+#from numpy.random import default_rng
 import matplotlib.pyplot as plt
 from math import pi, e, log
-from random import random
+#from random import random
 
 from modules.general import locator
 from modules.general import Control
@@ -97,8 +97,8 @@ while spike_count < spikes_sought:
     """Cull neurons that have no chance of firing before that bound"""
     #This is only perfect if you you're certain which neurons will fire
     #If you're not sure, it's only heuristic
-    generic.cull_larger[blocks, threads](d_lower_bound, d_fire_flag,
-                                    best_worst_time * (1 + leniency_threshold))
+    ##generic.cull_larger[blocks, threads](d_lower_bound, d_fire_flag,
+    ##                                best_worst_time * (1 + leniency_threshold))
 
     """Produce accurate estimates of remaining neurons' firing times"""
     Control.solve.find_firing_time(array_manager.device_arrays)
