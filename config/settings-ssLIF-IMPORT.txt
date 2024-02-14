@@ -1,0 +1,12 @@
+distance:distances_ring_123
+connection_weight:connection_weight_difference_of_normals
+v_calcs:v_calcs_ssLIF
+i_update:input_update_constant
+
+v_init:voltage_init_null
+i_init:input_init_constant
+coord_init:coordinate_init_R123
+
+fire_check:fire_check_ssLIF_trig
+root_finder:newton_raphson_ssLIF
+cleanup:cleanup_ssLIF
