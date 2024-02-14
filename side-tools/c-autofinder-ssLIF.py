@@ -5,15 +5,15 @@ from math import e, erf, pi, cos, sin, factorial
 
 #Shouldn't be 1 for this program, just use 1.0001 or similar
 beta = 4
-A = 2
+A = 4
 a = 1
-B = 2
+B = 4
 b = 2
 
 C = 2
 D = 2
 
-I = 3.0
+I = 0.9
 
 is_2D = False
 target = 1    #v_th
@@ -80,7 +80,7 @@ def part_v(Z, z, c):
     return Z * beta * (part_p + part_beta)
 
 def v(c):
-    return (I / (p**2 - q2)) + part_v(A, a, c) - part_v(B, b, c)
+    return (I * (2*p - 1) / (p**2 - q2)) + part_v(A, a, c) - part_v(B, b, c)
 
 def part_u(Z, z, c):
     coeff_sin = (beta - p) / abs_q
@@ -132,7 +132,8 @@ def part_v_alt(Z, z, c):
     return Z * beta * (part_p + part_beta)
 
 def v_alt(c):
-    return (I / (p**2 - q2)) + part_v_alt(A, a, c) - part_v_alt(B, b, c)
+    return (I * (2*p - 1) / (p**2 - q2)) \
+           + part_v_alt(A, a, c) - part_v_alt(B, b, c)
 
 #------------------------------------------------------------------------------
 

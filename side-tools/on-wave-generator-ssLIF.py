@@ -1,20 +1,20 @@
 from math import e, erf, pi, cos, sin
 
 beta = 4
-A = 2
+A = 4
 a = 1
-B = 2
+B = 4
 b = 2
 
-I = 3.0
+I = 0.9
 
 C = 2
 D = 2
 
-c = 7.36
+c = 4.8
 
-dx = 0.04
-neurons_number = 500
+dx = 0.01
+neurons_number = 2000
 
 
 ##is_2D = False
@@ -52,7 +52,7 @@ def part_v(Z, z, t):
     return Z * beta * (part_p + part_beta)
 
 def v(t):
-    return (I / (p**2 - q2)) + part_v(A, a, t) - part_v(B, b, t)
+    return (I * (2*p - 1) / (p**2 - q2)) + part_v(A, a, t) - part_v(B, b, t)
 
 def part_u(Z, z, t):
     coeff_sin = (beta - p) / abs_q
@@ -62,7 +62,7 @@ def part_u(Z, z, t):
              + coeff_sin * calc_integral(z, t, "sine")
     part_p *= e**(-p * t) * e**((z*p/c)**2 / 2)
 
-    part_beta = 0.5 * (1 + erf(-(z * beta)/(c * 2**0.5))) \
+    part_beta = 0.5 * (1 + erf((c/(z*2**0.5)*t) - (z * beta)/(c * 2**0.5))) \
                 * e**(-beta * t) * e**((z*beta/c)**2 / 2)
     return coeff_total * (part_p + part_beta)
     
@@ -76,6 +76,7 @@ def sub_part(t, gamma, maybe_beta):
     coeff = e**(-maybe_beta * t) * e**((maybe_beta * gamma)**2)
     part_erf = 0.5 * (1 + erf((t / (2*gamma)) - maybe_beta * gamma))
     return coeff * part_erf
+
 def part_s(Z, z, t):
     gamma = z / (c * 2**0.5)
     return Z * sub_part(t, gamma, beta)
@@ -138,12 +139,13 @@ for n in range(neurons_number):
         wigglage = u(t)
         synapse = s(t)
     else:
-        voltage = 0
-        wigglage = 0
+        voltage = -10
+        wigglage = 10
         synapse = s(t)
     if n == neurons_number - 1:
         line_end = ""
     v_file.write(str(voltage) + line_end)
+    u_file.write(str(wigglage) + line_end)
     s_file.write(str(synapse) + line_end)
 v_file.close()
 s_file.close()
