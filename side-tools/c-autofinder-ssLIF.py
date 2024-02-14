@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from math import e, erf, pi, cos, sin, factorial
 
 #Shouldn't be 1 for this program, just use 1.0001 or similar
-beta = 2
+beta = 4
 A = 2
 a = 1
 B = 2
@@ -13,7 +13,7 @@ b = 2
 C = 2
 D = 2
 
-I = 0.9
+I = 3.0
 
 is_2D = False
 target = 1    #v_th
@@ -32,6 +32,7 @@ if type(q) != type((-1)**0.5):
     raise TypeError
 abs_q = abs(q)
 q2 = -abs_q**2
+
 
 #-----------------------------------------------------------------------------
 #The follows is based on formula 8.40 and thereon in running review - edit
@@ -54,7 +55,7 @@ def calc_integral(z, c, cos_or_sin):
         derivs = [cos(mu), -sin(mu), -cos(mu), sin(mu)]
     value = 0
     m = []
-    for n in range(20):
+    for n in range(40):
         #See Eqn 8.44
         if n == 0:
             m.append(0.5*(1 + erf(-mu/(sigma*2**0.5))))
@@ -74,7 +75,7 @@ def part_v(Z, z, c):
     part_p += coeff_sin * calc_integral(z, c, "sine")
     part_p *= e**((z*p/c)**2 / 2)
     
-    part_beta = 0.5 * (1 + erf(-(z/c)**2 * beta))
+    part_beta = 0.5 * (1 + erf(-(z * beta)/(c * 2**0.5)))
     part_beta *= e**((z*beta/c)**2 / 2) * coeff_cos
     return Z * beta * (part_p + part_beta)
 
@@ -89,20 +90,59 @@ def part_u(Z, z, c):
              + coeff_sin * calc_integral(z, c, "sine")
     part_p *= e**((z*p/c)**2 / 2)
 
-    part_beta = 0.5 * (1 + erf(-(z/c)**2 * beta)) * e**((z*beta/c)**2 / 2)
+    part_beta = 0.5 * (1 + erf(-(z * beta)/(c * 2**0.5))) \
+                * e**((z*beta/c)**2 / 2)
     return coeff_total * (part_p + part_beta)
     
 def u(c):
-    return (-C*I / (p**2 - q2)) + part_v(A, a, c) - part_v(B, b, c)
+    return (-C*I / (p**2 - q2)) + part_u(A, a, c) - part_u(B, b, c)
+
+#------------------------------------------------------------------------------
+#Testing the convergence/divergence effects of the integration method
+
+def calc_integral_alt(z, c, cos_or_sin):
+    sigma = z/c
+    mu = sigma**2 * p
+
+    length = 5
+    divisions = 500
+    dT = length/divisions
+    total = 0
+    for x in range(divisions):
+        T = -dT * x
+        if cos_or_sin == "sine":
+            value = sin(abs_q * T)
+        elif cos_or_sin == "cosine":
+            value = cos(abs_q * T)
+        value *= (1 / (sigma * (2*pi)**0.5)) * e**(-((T - mu)/sigma)**2 / 2)
+        total += dT * value
+    return total
+
+def part_v_alt(Z, z, c):
+    coeff_cos = (2*p - beta - 1) / ((p - beta**2) - q2)
+    coeff_sin = (p**2 + q2 - p*(beta + 1) + beta) / ((p - beta**2) - q2)
+    coeff_sin /= abs_q
+    
+    part_p =  coeff_cos * calc_integral_alt(z, c, "cosine")
+    part_p += coeff_sin * calc_integral_alt(z, c, "sine")
+    part_p *= e**((z*p/c)**2 / 2)
+    
+    part_beta = 0.5 * (1 + erf(-(z * beta)/(c * 2**0.5)))
+    part_beta *= e**((z*beta/c)**2 / 2) * coeff_cos
+    return Z * beta * (part_p + part_beta)
+
+def v_alt(c):
+    return (I / (p**2 - q2)) + part_v_alt(A, a, c) - part_v_alt(B, b, c)
+
+#------------------------------------------------------------------------------
 
 #Assume the function is decreasing
 #This is probably going to be a bit of a hack for now
-
 c = 1
 step = 0.5
 margin = 0.00001
 for count in range(100):
-    test = v(c)
+    test = v_alt(c)
     if test > target:
         if test - target < margin:
             break
@@ -118,14 +158,21 @@ print(c)
 
 points = 200
 x_values = numpy.linspace(c - 0.2, c + 0.2, points)
-x_values = numpy.linspace(0.5, 1, points)
+x_values = numpy.linspace(0.5, 10, points)
 y_values = numpy.zeros(points)
+y_alt_values = numpy.zeros(points)  #"Manual" version
 for key in range(points):
     y_values[key] = v(x_values[key])
+    y_alt_values[key] = v_alt(x_values[key])
+
+
+
+        
 
 plt.figure()
-plt.plot(x_values, y_values)
-plt.axhline(y = target)
+#plt.plot(x_values, y_values, c="#dd0000")
+plt.plot(x_values, y_alt_values, c="#00dddd")
+plt.axhline(y = target, c="#000000", linestyle="dotted")
 
 #plt.title("Speed finder, $(A, a, B, b)$ = ({}, {}, {}, {}), $\\beta$ = {}".format(
 #    A, a, B, b, beta))
