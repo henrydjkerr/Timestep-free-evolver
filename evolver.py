@@ -95,6 +95,8 @@ while spike_count < spikes_sought:
                                             d_smallish_array, smallish_array)
 
     """Cull neurons that have no chance of firing before that bound"""
+    #This is only perfect if you you're certain which neurons will fire
+    #If you're not sure, it's only heuristic
     generic.cull_larger[blocks, threads](d_lower_bound, d_fire_flag,
                                     best_worst_time * (1 + leniency_threshold))
 
