@@ -62,23 +62,25 @@ def find_firing_time_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             end_time = upper_bound_d[n]
             #Calculate derived constants
             A = Control.v.coeff_trig(v_0, s_0, u_0, I)
-            B = Control.v.coeff_synapse(s_0)
-            #Calculate upper bounds on derivatives
-            Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * start_time) \
-                    + max(-synapse_decay * B * e**(-synapse_decay * start_time),
-                          -synapse_decay * B * e**(-synapse_decay * end_time))
-            Maccel = max(abs(A * (p**4 + abs_q**4)**0.5) * e**(-p * start_time) \
-                         + max(synapse_decay**2 * B * e**(-synapse_decay
-                                                          * start_time),
-                               synapse_decay**2 * B * e**(-synapse_decay
-                                                          * end_time)),
-                         0)
-            if Mvelo <= 0:
-                fire_flag_d[n] = 0
-                return
-            #Start iterations
+            B = Control.v.coeff_synapse(s_0)            #Start iterations
             t_old = start_time
             for count in range(100):
+                #Calculate upper bounds on derivatives
+                #You need fewer iterations if you do it inside the loop
+                Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * start_time) \
+                        + max(-synapse_decay * B * e**(-synapse_decay * start_time),
+                              -synapse_decay * B * e**(-synapse_decay * end_time))
+                Maccel = max(abs(A * (p**4 + abs_q**4)**0.5) * e**(-p * start_time) \
+                             + max(synapse_decay**2 * B * e**(-synapse_decay
+                                                              * start_time),
+                                   synapse_decay**2 * B * e**(-synapse_decay
+                                                              * end_time)),
+                             0)
+                if Mvelo <= 0:
+                    #Gradient is negative from here on, so you'll never cross
+                    fire_flag_d[n] = 0
+                    return
+                #Perform modified Newton-Raphson method
                 v_test = Control.v.get_vt(t_old, v_0, s_0, u_0, I)
                 v_deriv = Control.v.get_dvdt(t_old, v_test, v_0, s_0, u_0, I)
                 m = min(Mvelo,
