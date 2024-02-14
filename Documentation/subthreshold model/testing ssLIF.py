@@ -231,10 +231,11 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
     they never step over a root.
     If reaches a value over upper_bound_d[n], reports no firing time found.
     """
+    error_rates_temp = np.zeros(nr_loops, dtype=np.double)
     #Load variables
     if v_0 > v_th:
         #Edge case, don't want to root-solve in this case
-        return (True, 0, 0)
+        return (True, 0, 0, error_rates_temp)
     #Calculate derived constants
     A = coeff_trig(v_0, s_0, u_0, I)
     B = coeff_synapse(s_0)
@@ -251,10 +252,10 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
 ##        return (False, 0, 0)
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     #Start iterations
-    #print(Mvelo, Maccel)
     t_old = start_time
     counter = 0
-    for count in range(1000):
+    for count in range(nr_loops):
+        #Or calculate them inside the loop instead
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * t_old) \
                 + max(-synapse_decay * B * e**(-synapse_decay * t_old),
@@ -266,18 +267,16 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
         if Mvelo <= 0:
             return (False, t_old, counter)
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        error_rates_temp[count] = t_old
         counter += 1
         v_test = get_vt(t_old, v_0, s_0, u_0, I)
         v_deriv = get_dvdt(t_old, v_test, s_0, u_0, I)
         try:
-            #print(counter, t_old)
             m = min(Mvelo,
                     0.5*(v_deriv \
                          + (v_deriv**2 + 4*Maccel*(v_th - v_test))**0.5))
-            #print(t_old, v_test, m)
-            #print(t_old + (1 - v_test)/m)
         except TypeError:
-            #print(Mvelo, v_deriv, Maccel, v_test)
+            #Error reporting if we accidentally get complex numbers
             print("Position error")
             print("Time:", t_old)
             print("Voltage:", v_test)
@@ -290,7 +289,7 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
             return (False, t_old, counter)
         t_new = t_old + (v_th - v_test) / m
         if abs(t_new - t_old) <= error_bound:
-            return (True, t_new, counter)
+            return (True, t_new, counter, error_rates_temp)
         elif t_new > end_time:
             return (False, t_new, counter)
         else:
@@ -306,7 +305,7 @@ def find_firing_time(v_0, s_0, u_0, I, start_time, end_time):
 ##    raise OverflowError
     return (False, t_new, counter)
 
-
+#------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 
 v_th = 1
@@ -378,21 +377,24 @@ C = 3.7332053912579606
 D = 4.854644992605482
 beta = 2.8530325284973057
 
+#Derived parameters
 synapse_decay = beta
 p = 0.5*(D+1)
 q2 = 0.25 * ((D - 1)**2 - 4*C)
 abs_q = abs(q2**0.5)
 
-error_bound = 0.000001
+#error_bound = 0.000001
+error_bound = 0.0000000000001
 
 lower_bound = 0
 upper_bound = 10
 
+#Reporting setup
 test_mode = False
 if test_mode:
     loop_count = 1
 else:
-    loop_count = 1000000
+    loop_count = 100
 
 true_count = 0
 true_iters = 0
@@ -401,7 +403,12 @@ false_iters = 0
 false_results = []
 valid_cases = 0
 
-iter_hist = np.zeros(1000)
+nr_loops = 1000
+error_rates = np.zeros(nr_loops)
+#error_rates_temp = np.zeros(nr_loops)
+iter_hist = np.zeros(nr_loops)
+
+sample_flag = True
 
 stopwatch = time.time()
 for x in range(loop_count):
@@ -439,6 +446,20 @@ for x in range(loop_count):
             if result[0] == True:
                 true_count += 1
                 true_iters += result[2]
+                if sample_flag:
+                    sample_flag = False
+                    sample = result[:]
+                
+##                for n in range(nr_loops):
+##                    if n > 0 and temp[n] == 0:
+##                        break
+##                    else:
+##                        if result[1] < temp[n]:
+##                            print("sign error: iteration {}, value {}".format(
+##                                n, result[1] - temp[n]))
+##                            raise ValueError
+##                        error_rates[n] += result[1] - temp[n]
+                #error_rates_temp = np.zeros(nr_loops)
             else:
                 false_count +=1
                 false_iters += result[2]
@@ -459,8 +480,30 @@ if false_count > 0:
 print("Total cases evaluated:", valid_cases)
 print("Cases progressing beyond fire_check:", true_count + false_count)
 
+##end = nr_loops
+##for n in range(nr_loops):
+##    if error_rates[n] != 0:
+##        error_rates[n] /= true_count
+##        try:
+##            error_rates[n] = log(error_rates[n])
+##        except ValueError:
+##            print(error_rates[n])
+##            raise
+##    else:
+##        end = n
+##        break
+
+for n in range(sample[2]):
+    error_rates[n] = log(sample[1] - sample[3][n])       
+
 plt.figure()
-x_axis = np.arange(1000)
-y_axis = iter_hist
+x_axis = np.arange(1, sample[2]+1)
+y_axis = error_rates[:sample[2]]
+plt.title(r"Log difference between iterated $t$ estimate and final result")
+plt.xlabel("Iteration")
+plt.ylabel("log(error)")
 plt.plot(x_axis, y_axis, c="#000000")
+
+timestamp = time.strftime("%Y%m%d%H%M%S")
+plt.savefig("error-graph-{}.png".format(timestamp))
 plt.show()
