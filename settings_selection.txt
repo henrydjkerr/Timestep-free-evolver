@@ -1,4 +1,4 @@
 parameters:config/parameters.txt
-modules:config/settings-ssLIF-DEFAULT.txt
+modules:config/settings-ssLIF-IMPORT.txt
 arrays:config/arrays-ssLIF.txt
-import:config/data_import-NULL.txt
+import:config/data_import-wave-ssLIF.txt

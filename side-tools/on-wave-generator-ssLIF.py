@@ -6,12 +6,12 @@ a = 1
 B = 4
 b = 2
 
-I = 0.9
+I = 1
 
 C = 2
 D = 2
 
-c = 4.8
+c = 7.3
 
 dx = 0.01
 neurons_number = 2000

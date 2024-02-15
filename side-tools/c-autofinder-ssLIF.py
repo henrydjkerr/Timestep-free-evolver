@@ -13,7 +13,7 @@ b = 2
 C = 2
 D = 2
 
-I = 0.9
+I = 1
 
 is_2D = False
 target = 1    #v_th

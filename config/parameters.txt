@@ -86,8 +86,8 @@ input_strength:20
 input_shutoff:3
 
 |Baseline input values before and after shutoff
-input_base_before:0.9
-input_base_after:0.9
+input_base_before:1
+input_base_after:1
 
 |Modifiers for cosh-reciprocal curve shape
 rc_height:2
