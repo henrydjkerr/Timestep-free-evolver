@@ -21,7 +21,7 @@ dy = lookup["dy"]
 dz = lookup["dz"]
 beta = lookup["synapse_decay"]
 
-density_factor = beta
+density_factor = 1
 dims = [dx, dy, dz]
 for k in range(dimension):
     density_factor *= dims[k]
@@ -35,5 +35,5 @@ def connection_weight(diff):
     """
     signal = strength_e * device_gaussian.curve(diff, sigma_e) \
              - strength_i * device_gaussian.curve(diff, sigma_i)
-    signal *= density_factor
+    signal *= beta * density_factor
     return signal
