@@ -113,14 +113,14 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
         lower_bound_d[n] = 0
         upper_bound_d[n] = 0
 
-        #Hacking past this
-        if v_0 > 0.6:
-            fire_flag_d[n] = 1
-            lower_bound_d[n] = 0
-            upper_bound_d[n] = 1
-    return
-
-def blah():       
+##        #Hacking past this
+##        if v_0 > 0.6:
+##            fire_flag_d[n] = 1
+##            lower_bound_d[n] = 0
+##            upper_bound_d[n] = 1
+##    return
+##
+##def blah():       
         if v_0 > v_th:
             #Trivial case: neuron is already firing
             case = 1
@@ -175,6 +175,13 @@ def blah():
             #In any other case: no firing
 
         #Now start processing cases
+        #Case 0: no firing detected
+        #Case 1: neuron is already firing (trivial)
+        #Case 2: lower and upper bound easily determined, but still need period
+            #   update on upper bound
+        #Case 3: lower bound = 0, upper bound depends on inflection point
+        #Case 4: both bounds depend on inflection point
+        #Case 5: lower bound = 0, need to step through for upper bound
         if case > 0:
             fire_flag_d[n] = 1
         if case in (3, 4):
@@ -199,7 +206,7 @@ def blah():
             else:
                 lower_bound_d[n] = extreme_time * (case - 3)
                 upper_bound_d[n] = inflect_time
-        if case in (2, 3):
+        if case == 5:
             #Blindly jump forward exponentially until you get an upper bound
             m = 0
             while True:
