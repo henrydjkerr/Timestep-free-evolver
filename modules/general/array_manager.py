@@ -24,6 +24,10 @@ def retrieve(key):
     #Pull data from device memory to host memory
     device_arrays[key].copy_to_host(host_arrays[key])
 
+def retrieve_all_from_device():
+    for key in host_arrays:
+        retrieve(key)
+
 def file_to_array(filename, array):
     #Read data from file into an array host-side
     #The file should only have one entry per line (currently unchecked)
