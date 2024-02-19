@@ -56,7 +56,7 @@ def find_small_qualified(some_array, flags, results_array, fill):
         limit = cuda.libdevice.min(threads, neurons_number - n)
         lowest = fill
         lowest_flag = False
-        for m in range(n + 1, n + limit):
+        for m in range(n, n + limit):
             if flags[m]:
                 if lowest_flag == False:
                     lowest = some_array[m]
