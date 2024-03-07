@@ -111,10 +111,9 @@ def calc_integral(z, t, param, func_id):
     dT = length/divisions
     total = 0
     for x in range(divisions):
-        T = t - (x+0.5)*dT  #Midpoint method
-        value = func(abs_q * (T - t))     \
-                * (1 / (z * (2*pi)**0.5)) \
-                * e**( -(c**2 / (2*z**2)) * T**2 + param * (T - t))
+        T =  - (x+0.5)*dT  #Midpoint method
+        value = func(abs_q * T ) * (c / (z * (2*pi)**0.5)) \
+                * e**( -(c**2 / (2*z**2)) * (T + t)**2 + param * T)
         total += dT * value
     return total
 
