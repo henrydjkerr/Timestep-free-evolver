@@ -61,8 +61,8 @@ for line in raw_info:
         data_type = line[2]
         #host_arrays[key] = np.zeros(lookup[length], data_types[data_type])
         try:
-            #host_arrays[key] = rng.random(lookup[length], data_types[data_type])
-            host_arrays[key] = np.zeros(lookup[length], data_types[data_type])
+            host_arrays[key] = rng.random(lookup[length], data_types[data_type])
+            #host_arrays[key] = np.zeros(lookup[length], data_types[data_type])
         except TypeError:
             host_arrays[key] = np.zeros(lookup[length], data_types[data_type])
     except ValueError:
