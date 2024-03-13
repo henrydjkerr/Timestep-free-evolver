@@ -15,10 +15,6 @@ D = 2
 
 c = 3.24
 
-dx = 0.001
-neurons_number = 2000
-
-
 ##is_2D = False
 ##
 ###If in 2D:
@@ -36,20 +32,6 @@ if type(q) != type((-1)**0.5):
 abs_q = abs(q)
 q2 = -abs_q**2
 
-#-----------------------------------------------------------------------------
-#The s calculations are nothing new
-
-def sub_part(t, gamma, maybe_beta):
-    coeff = e**(-maybe_beta * t) * e**((maybe_beta * gamma)**2)
-    part_erf = 0.5 * (1 + erf((t / (2*gamma)) - maybe_beta * gamma))
-    return coeff * part_erf
-
-def part_s(Z, z, t):
-    gamma = z / (c * 2**0.5)
-    return Z * sub_part(t, gamma, beta)
-    
-def s(t):
-    return beta * (part_s(A, a, t) - part_s(B, b, t))
 
 #-----------------------------------------------------------------------------
 #Redoing
@@ -86,10 +68,10 @@ def part_u(Z, z, t):
     return Z * (part_p + part_beta)
 
 
-def s(c):
+def s(t):
     return beta * (part_s(A, a, t) - part_s(B, b, t))
 
-def part_s(Z, z, c):
+def part_s(Z, z, t):
     return Z * calc_integral(z, t, beta, None)
 
 #And then the new integral solver (numerical midpoint method)
@@ -165,8 +147,8 @@ def part_v_after(Z, z, t):
 
 #-----------------------------------------------------------------------------
 
-steps = 1000
-t_values = np.linspace(5, -5, steps)
+steps = 800
+t_values = np.linspace(-4, 4, steps)
 voltage = np.zeros(steps)
 wigglage = np.zeros(steps)
 synapse = np.zeros(steps)
@@ -178,7 +160,8 @@ for n in range(steps):
         wigglage[n] = u(t)
         synapse[n] = s(t)
     else:
-        voltage[n] = v_after(t)
+        #voltage[n] = v_after(t)
+        voltage[n] = v(t)
         wigglage[n] = u(t)
         synapse[n] = s(t)
 
@@ -196,6 +179,6 @@ plt.ylabel("Value")
 plt.axhline(1, linestyle="dashed", c="#999999", label="$v_{th}$")
 plt.axhline(0, linestyle="dotted", c="#999999", label="$v_r$")
 plt.axvline(0, c="#999999")
-plt.legend()
+plt.legend(loc = "upper left")
 plt.show()
 
