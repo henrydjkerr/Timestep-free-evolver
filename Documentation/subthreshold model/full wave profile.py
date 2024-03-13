@@ -2,18 +2,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import e, erf, pi, cos, sin
 
-beta = 2
+beta = 4
 A = 2
 a = 1
 B = 2
-b = 2
+b = 3
 
-I = 1.8
+I = 3.4
 
-C = 2
+C = 6
 D = 2
 
-c = 1.02
+c = 3.24
 
 dx = 0.001
 neurons_number = 2000
@@ -54,7 +54,7 @@ def s(t):
 #-----------------------------------------------------------------------------
 #Redoing
 
-def v(c):
+def v(t):
     return (I * (2*p - 1) / (p**2 - q2)) \
            + beta * (part_v(A, a, t) - part_v(B, b, t))
 
@@ -70,7 +70,7 @@ def part_v(Z, z, t):
     return Z * (part_p + part_beta)
 
 
-def u(c):
+def u(t):
     return C*I / (p**2 - q2) \
            + C * beta * (part_u(A, a, t) - part_u(B, b, t))
 
@@ -125,7 +125,7 @@ def calc_integral(z, t, param, func_id,
     for x in range(divisions):
         T = upper - (x+0.5)*dT  #Midpoint method
         value = func(abs_q * (T - t))     \
-                * (1 / (z * (2*pi)**0.5)) \
+                * (c / (z * (2*pi)**0.5)) \
                 * e**( -(c**2 / (2*z**2)) * T**2 + param*T - param2*t)
         total += dT * value
     return total
@@ -134,27 +134,29 @@ def calc_integral(z, t, param, func_id,
 
 v_r = 0
 def v_after(t):
-    values_I =   I * (2*p - 1) / (p**2 - q2) \
-               * (1 - e**(-p * t) * cos(abs_q * t)) \
-               + I * (p**2 + q2 - p) \
+    values_I =   I * ((2*p - 1) / (p**2 - q2))        \
+               * (1 - e**(-p * t) * cos(abs_q * t))   \
+               - I * (p**2 + q2 - p)                  \
                / ((p**2 - q2) * abs_q) * e**(-p*t) * sin(abs_q * t)
 
-    values_init = e**(-p * t) * (v_r * cos(abs_q * t)
-                                 + (p - 1 - u(0)) / abs_q * sin(abs_q * t))
+    values_init = e**(-p * t)                   \
+                  * ( v_r * cos(abs_q * t)      
+                     - ((v_r * (1 - p) + u(0)) / abs_q) * sin(abs_q * t))
 
     return values_I + values_init + beta * (part_v_after(A, a, t) -
                                             part_v_after(B, b, t))
 
 def part_v_after(Z, z, t):
     coeff_diff = (2*p - beta - 1) / ((p - beta)**2 - q2)
-    coeff_sum = (p**2 + q2 - p*(beta + 1) + beta) / ((p - beta)**2 - q2)
+    coeff_sum = (p**2 + q2 - p*(beta + 1) + beta) \
+                / (((p - beta)**2 - q2) * abs_q)
 
-    cos_inside = coeff_diff * calc_integral(z, t, p, "cosine", 0)
-    sin_inside = coeff_sum  * calc_integral(z, t, p, "sine", 0)
+    cos_inside = coeff_diff * calc_integral(z, t, p, "cosine", lower = 0)
+    sin_inside = coeff_sum  * calc_integral(z, t, p, "sine", lower = 0)
     part_beta  = coeff_diff * calc_integral(z, t, beta, None)
     trig_outside = (coeff_diff * cos(abs_q * t)
                     + coeff_sum * sin(abs_q * t)) \
-                    * calc_integral(z, t, beta, None, None, 0, p)
+                    * calc_integral(z, t, beta, None, upper = 0, param2 = p)
     return Z * (-cos_inside + sin_inside + part_beta - trig_outside)
                     
     
