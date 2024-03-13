@@ -1,20 +1,20 @@
 from math import e, erf, pi, cos, sin
 
-beta = 2
+beta = 4
 A = 2
 a = 1
 B = 2
-b = 2
+b = 3
 
-I = 1.8
+I = 3.4
 
-C = 2
+C = 6
 D = 2
 
-c = 1.02
+c = 3.24
 
-dx = 0.001
-neurons_number = 2000
+dx = 0.004
+neurons_number = 5000
 
 
 ##is_2D = False
@@ -52,7 +52,7 @@ def s(t):
 #-----------------------------------------------------------------------------
 #Redoing
 
-def v(c):
+def v(t):
     return (I * (2*p - 1) / (p**2 - q2)) \
            + beta * (part_v(A, a, t) - part_v(B, b, t))
 
@@ -68,7 +68,7 @@ def part_v(Z, z, t):
     return Z * (part_p + part_beta)
 
 
-def u(c):
+def u(t):
     return C*I / (p**2 - q2) \
            + C * beta * (part_u(A, a, t) - part_u(B, b, t))
 
@@ -84,7 +84,7 @@ def part_u(Z, z, t):
     return Z * (part_p + part_beta)
 
 
-def s(c):
+def s(t):
     return beta * (part_s(A, a, t) - part_s(B, b, t))
 
 def part_s(Z, z, c):
