@@ -47,13 +47,14 @@ def postclean_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
     n = cuda.grid(1)
     if n < neurons_number:
         #Calculate updated voltage
+        temp_voltage = voltage_d[n]
         if fire_flag_d[n]:   #If firing
             voltage_d[n] = v_r
         else:                   #If not firing
             voltage_d[n] = Control.v.get_vt(fastest_time_d, voltage_d[n],
                                             synapse_d[n], wigglage_d[n],
                                             input_strength_d[n])
-        wigglage_d[n] = Control.v.get_ut(fastest_time_d, voltage_d[n],
+        wigglage_d[n] = Control.v.get_ut(fastest_time_d, temp_voltage,
                                          synapse_d[n], wigglage_d[n],
                                          input_strength_d[n])
         #Update synapse value wrt time evolution
