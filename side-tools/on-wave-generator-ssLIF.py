@@ -35,21 +35,6 @@ abs_q = abs(q)
 q2 = -abs_q**2
 
 #-----------------------------------------------------------------------------
-#The s calculations are nothing new
-
-def sub_part(t, gamma, maybe_beta):
-    coeff = e**(-maybe_beta * t) * e**((maybe_beta * gamma)**2)
-    part_erf = 0.5 * (1 + erf((t / (2*gamma)) - maybe_beta * gamma))
-    return coeff * part_erf
-
-def part_s(Z, z, t):
-    gamma = z / (c * 2**0.5)
-    return Z * sub_part(t, gamma, beta)
-    
-def s(t):
-    return beta * (part_s(A, a, t) - part_s(B, b, t))
-
-#-----------------------------------------------------------------------------
 #Redoing
 
 def v(t):
@@ -87,7 +72,7 @@ def part_u(Z, z, t):
 def s(t):
     return beta * (part_s(A, a, t) - part_s(B, b, t))
 
-def part_s(Z, z, c):
+def part_s(Z, z, t):
     return Z * calc_integral(z, t, beta, None)
 
 #And then the new integral solver (numerical midpoint method)
