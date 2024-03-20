@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from math import e, erf, pi
 
 #Shouldn't be 1 for this program, just use 1.0001 or similar
-beta = 1.5
+beta = 2
 A = 2
 a = 1
 B = 2
@@ -44,7 +44,7 @@ def calc_integral(z, c, param):
     t = 0
     for x in range(divisions):
         T = t - (x+0.5)*dT
-        value = e**(-(0.5 * (c/z)**2 * T**2) + (T - t))
+        value = e**(-(0.5 * (c/z)**2 * T**2) + param*(T - t))
         total += dT * value
     return total
 
@@ -54,9 +54,8 @@ def part_alt(Z, z, c):
     
 
 def whole_alt(c):
-    return part_alt(A, a, c) - part(B, b, c)
+    return part_alt(A, a, c) - part_alt(B, b, c)
 
-#Not lining up?  Doesn't seem to have solved the numerics anyway
 
 #------------------------------------------------------------------------------
 
@@ -68,7 +67,7 @@ c = 1
 step = 0.5
 margin = 0.00001
 for count in range(100):
-    test = whole(c)
+    test = whole_alt(c)
     if test > target:
         if test - target < margin:
             break
@@ -92,7 +91,7 @@ for key in range(points):
     y_alt_values[key] = whole_alt(x_values[key])
 
 plt.figure()
-plt.plot(x_values, y_values)
+#plt.plot(x_values, y_values)
 plt.plot(x_values, y_alt_values)
 plt.axhline(y = target)
 
