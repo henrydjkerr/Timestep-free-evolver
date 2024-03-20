@@ -4,16 +4,16 @@ import matplotlib.pyplot as plt
 from math import e, erf, pi, cos, sin, factorial
 
 #Shouldn't be 1 for this program, just use 1.0001 or similar
-beta = 2
+beta = 6
 A = 2
 a = 1
 B = 2
-b = 2
+b = 1.57
 
-C = 2
-D = 2
+C = 0.0001
+D = 1
 
-I = 1.8
+I = 0.90 * (D + C)/D
 
 is_2D = False
 target = 1    #v_th
@@ -105,7 +105,7 @@ print(c)
 
 points = 200
 x_values = numpy.linspace(c - 0.2, c + 0.2, points)
-x_values = numpy.linspace(0.5, 10, points)
+x_values = numpy.linspace(0.2, 5, points)
 y_values = numpy.zeros(points)
 y_alt_values = numpy.zeros(points)  #"Manual" version
 for key in range(points):
