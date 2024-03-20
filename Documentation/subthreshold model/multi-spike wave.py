@@ -17,19 +17,35 @@ from math import e, erf, pi, cos, sin
 ##firing_times = [0, 0.53, 0.9, 1.2, 1.45, 1.7, 2.0, 2.3, 2.7, 3.1, 3.6]
 ##u_at_firing_times = firing_times[:]
 
+##beta = 6
+##A = 2
+##a = 1
+##B = 2
+##b = 2
+##
+##I = 1.74
+##
+##C = 2
+##D = 2
+##
+##c = 0.3
+##firing_times = [0, 1.12, 2.05, 2.9, 3.75, 4.65, 5.7]
+
+
+
 beta = 6
 A = 2
 a = 1
 B = 2
-b = 2
+b = 2.8
 
-I = 1.74
+C = 2.0001
+D = 1
 
-C = 2
-D = 2
+I = 0.90 * (C + D) / D
 
-c = 0.3
-firing_times = [0, 1.12, 2.05, 2.9, 3.75, 4.65, 5.7]
+c = 3.55
+firing_times = [0]
 u_at_firing_times = firing_times[:]
 
 v_r = 0
@@ -195,7 +211,7 @@ def part_u(Z, z, t, t_old):
     
 #-----------------------------------------------------------------------------
 
-steps = 300
+steps = 301
 t_values = np.linspace(-3, 9, steps)
 voltage = np.zeros(steps)
 wigglage = np.zeros(steps)
