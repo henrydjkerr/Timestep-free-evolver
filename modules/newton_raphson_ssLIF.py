@@ -99,4 +99,6 @@ def find_firing_time_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
                 else:
                     t_old = t_new
             #Currently silently failing if it takes too many iterations
+    if count == 99:
+        fire_flag_d[n] = 0
     return
