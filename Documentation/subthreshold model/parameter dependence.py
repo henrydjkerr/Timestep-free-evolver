@@ -109,36 +109,115 @@ def get_c():
         return None
     print(count, c)
     return c
-    
-points = 20
-x_values = numpy.linspace(1.5, 5.5, points)
-y_values = numpy.zeros(points)
+
+mode = "beta"
+
+if mode == "AB":
+    points = 40
+    s_lim = [1.3, 3.9]
+    ss_lim = [1.7, 3]
+elif mode == "ab":
+    points = 2
+    s_lim = [0.1, 10]
+    ss_lim = [0.1, 10]
+elif mode == "b":
+    points = 40
+    s_lim = [1.57, 4.5]
+    ss_lim = [1.43, 2.75]
+elif mode == "beta":
+    points = 40
+    s_lim = [1.4, 50]
+    ss_lim = [4, 35]
+
+xs_values = numpy.linspace(s_lim[0], s_lim[1], points)
+xss_values = numpy.linspace(ss_lim[0], ss_lim[1], points)
+s_values = numpy.zeros(points)
 ss_values = numpy.zeros(points)
-for n, x in enumerate(x_values):
-    b = x
-    
+
+if mode == "ab":
+    s_factor = 1.6942138671875
+    ss_factor = 2.7125732421875
+    for n in range(points):
+        s_values[n] = s_factor * xs_values[n]
+        ss_values[n] = ss_factor * xss_values[n]
+
+if mode != "ab":    
     C = 0.0001
-    I = 0.9
+    I = 0.9 * (C + D) / D
     p, abs_q, q2 = pq_stuff(C, D)
-    y_values[n] = get_c()
+    for n, x in enumerate(xs_values):
+        if mode == "AB":
+            A = x
+            B = x
+        elif mode == "b":
+            b = x
+        elif mode == "beta":
+            beta = x
+        s_values[n] = get_c()
 
     C = 2
     I = 0.9 * (C + D) / D
     p, abs_q, q2 = pq_stuff(C, D)
-    ss_values[n] = get_c()
+    for n, x in enumerate(xss_values):
+        if mode == "AB":
+            A = x
+            B = x
+        elif mode == "b":
+            b = x
+        elif mode == "beta":
+            beta = x
+        ss_values[n] = get_c()
 
-plt.figure()
-plt.xlabel("A = B")     #1.5 - 51.5
-#plt.xlabel("a = 0.5b")  #0.5 - 3
-plt.xlabel("b")         #~2+ ?
-#plt.xlabel(r"$\beta$")
+
+plt.figure(figsize=(5, 3))
+if mode == "AB":
+    plt.xlabel("$A$, $B$")
+    plt.title("Scaling $A$ and $B$, with $A = B$")
+elif mode == "ab":
+    plt.xlabel("$a$, $0.5b$")
+    plt.title("Scaling $a$ and $b$, with $2a = b$")
+elif mode == "b":
+    plt.title("Scaling $b$")
+    plt.xlabel("$b$")
+elif mode == "beta":
+    plt.xlabel(r"$\beta$")
+    plt.title(r"Scaling $\beta$")
 #plt.xlabel("C, with I(C+D)/D")
 
-plt.plot(x_values, y_values, c="#000000")
-plt.plot(x_values, ss_values)
-
-plt.title("Placeholder title")
 plt.ylabel("$c$")
+
+if mode == "b":
+    ss_values[0] = 1.2
+plt.plot(xs_values, s_values, c="#000000")
+plt.plot(xss_values, ss_values, c="#9569be")
+
+if mode != "ab":
+    for n, y in enumerate(s_values):
+        if not numpy.isnan(y):
+            plt.scatter(xs_values[n], y,
+                        s = 50, marker = "x", c = "#000000")
+            print(xs_values[n], y)
+            break
+if mode == "AB" or mode == "b":
+    plt.scatter(xs_values[points-1], s_values[points-1],
+                s = 50, marker="o", c="#000000")
+
+if mode != "ab":
+    for n, y in enumerate(ss_values):
+        if not numpy.isnan(y):
+            mark = "x"
+            if mode == "beta":
+                mark = "o"
+            plt.scatter(xss_values[n], y,
+                        s = 50, marker = mark, c = "#9569be")
+            print(xss_values[n], y)
+            break
+if mode != "ab":
+    plt.scatter(xss_values[points-1], ss_values[points-1],
+                s = 50, marker="o", c="#9569be")
+
+plt.tight_layout()
+
 
 ##points = 200
 ##x_values = numpy.linspace(c - 0.2, c + 0.2, points)
@@ -155,5 +234,6 @@ plt.ylabel("$c$")
 
 #plt.title("Speed finder, $(A, a, B, b)$ = ({}, {}, {}, {}), $\\beta$ = {}".format(
 #    A, a, B, b, beta))
+
 plt.show()
         
