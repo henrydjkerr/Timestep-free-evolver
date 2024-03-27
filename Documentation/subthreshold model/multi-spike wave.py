@@ -32,24 +32,118 @@ from math import e, erf, pi, cos, sin
 ##firing_times = [0, 1.12, 2.05, 2.9, 3.75, 4.65, 5.7]
 
 
+##beta = 6
+##A = 2
+##a = 1
+##B = 2
+##b = 2.8
+##
+##C = 2.0001
+##D = 1
+##
+##I = 0.90 * (C + D) / D
+##
+##c = 3.55
+##firing_times = [0]
+
+
+##beta = 4
+##A = 2
+##a = 1
+##B = 2
+##b = 2
+##
+##C = 2.0001
+##D = 1
+##
+##I = 0.90 * (C + D) / D
+##
+##c = 0.15
+##firing_times = [0.0, 1.0, 1.8, 2.5, 3.2, 3.9,
+##                4.5, 5.1, 5.7, 6.3, 6.9,
+##                7.6, 8.3, 9.0, 9.7, 10.3, 10.9,
+##                11.5, 12.1, 12.8, 13.5, 14.3, 15.2,
+##                16.1, 17.0, 18.0, 19, 20, 21.1, 22.3]
+
+##beta = 6
+##A = 2
+##a = 1
+##B = 2
+##b = 2
+##
+##C = 4.001
+##D = 1
+##
+##I = 0.90 * (C + D) / D
+##
+##c = 1.0
+##firing_times = [0.0, 0.6, 0.95, 1.3, 1.65, 1.95, 2.3, 2.7, 3.1, 3.5, 4.0]
 
 beta = 6
 A = 2
 a = 1
 B = 2
-b = 2.8
+b = 2
 
-C = 2.0001
+C = 2.001
 D = 1
 
-I = 0.90 * (C + D) / D
+#(Trying to) get 2 spikes immediate
+c = 1.78
+t = 0.62
 
-c = 3.55
-firing_times = [0]
+#2 spikes with a moderate gap
+c = 2.6
+t = 1.8
+
+###2 spikes with a larger gap
+##c = 2.70
+##t = 2.2
+
+###"Separated" solution, C = 2 case, presumed stable
+##c = 2.71
+##t = 5.0
+
+###2 close together, but wants a third firing
+##c = 0.3
+##t = 1.1
+##
+##
+##C = 0.001
+###Normal and direct 2-spike
+##c = 0.84
+##t = 1.3
+##
+###Somehow this also works
+###Unstable case?
+##c = 0.2
+##t = 3.4
+##
+###Wave where the s-troughs are overlapping
+###Unstable solution, presumably
+##c = 0.36
+##t = 13
+##
+###Wave where the two packets are ~independent
+###Can take whatever firing time you like above ~7
+##c = 1.7
+##t = 7
+##
+##C = 2.001
+
+##
+###Not quite separated, and has post-firing anyway so it doesn't work
+##c = 0.64
+##t = 6
+
+
+
+firing_times = [0, t]
 u_at_firing_times = firing_times[:]
 
 v_r = 0
 
+I = 0.90 * (C + D) / D
 #Derived values
 p = 0.5*(D+1)
 q = 0.5*( (D-1)**2 -4*C )**0.5
@@ -211,7 +305,7 @@ def part_u(Z, z, t, t_old):
     
 #-----------------------------------------------------------------------------
 
-steps = 301
+steps = 601
 t_values = np.linspace(-3, 9, steps)
 voltage = np.zeros(steps)
 wigglage = np.zeros(steps)
@@ -224,6 +318,8 @@ for k, t in enumerate(firing_times):
     else:
         u_at_firing_times[k] = u(t, firing_times[k-1], u_at_firing_times[k-1])
 
+print(v(0))
+print(v(firing_times[1], 0, u_at_firing_times[0]))
 
 for n in range(steps):
     t = t_values[n]
@@ -241,19 +337,21 @@ for n in range(steps):
 
 
 plt.figure()
-plt.plot(t_values, voltage, c="#0033dd", label="$v$")
-plt.plot(t_values, synapse, c="#33dd00", label="$s$")
-plt.plot(t_values, wigglage, c="#dd0033", label="$u$")
+plt.plot(t_values, synapse, c="#ff7f41", label="$s$")
+plt.plot(t_values, wigglage, c="#9569be", label="$u$")
+plt.plot(t_values, voltage, c="#007d69", label="$v$")
+
+plt.gca().invert_xaxis()
 
 plt.title("""\n
-Variables for  ssLIF multi-spike wave, $c$ = {}
+Travelling wave profile for multi-spike wave, $c$ = {}
 """.format(c))
-plt.xlabel("Time")
+plt.xlabel("Co-moving coordinate $t - x/c$")
 plt.ylabel("Value")
 
 plt.axhline(1, linestyle="dashed", c="#999999", label="$v_{th}$")
 plt.axhline(0, linestyle="dotted", c="#999999", label="$v_r$")
 plt.axvline(0, c="#999999")
-plt.legend(loc = "upper left")
+plt.legend(loc = "lower left")
 plt.show()
 
