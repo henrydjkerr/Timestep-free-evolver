@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from math import e, erf, pi, cos, sin, log
 from scipy import optimize
+from scipy import linalg
 
 beta = 6
 A = 2
@@ -10,7 +11,9 @@ a = 1
 B = 2
 b = 2
 
+C = 1
 D = 1
+I_raw = 0.9
 
 v_th = 1
 v_r = 0
@@ -21,6 +24,8 @@ C_steps = 30
 x_count = 6
 y_count = 12
 
+print( (-9) ** 0.5)
+
 def update_C(new_C):
     global C
     global I
@@ -30,20 +35,22 @@ def update_C(new_C):
 
     #C = C_min + (C_max - C_min) * (k/C_steps)
     C = new_C
-    I = 0.90 * (C + D) / D
+    I = I_raw * (C + D) / D
     #Derived values
     p = 0.5*(D+1)
-    q = 0.5*( (D-1)**2 -4*C )**0.5
-    if type(q) != type((-1)**0.5):
-        print("q is", q)
+    interior = (D-1)**2 -4*C
+    if interior <= 0:
+        abs_q = 0.5 * (-interior)**0.5
+        q2 = -abs_q**2
+    else:
+        print("q is 0.5 *", interior, "** 0.5")
         print("q should be imaginary for this to work")
         raise TypeError
-    abs_q = abs(q)
     q2 = -abs_q**2
     return
 
-update_C(1)
-
+update_C(C)
+print("hi")
 
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
@@ -199,7 +206,6 @@ def part_u(Z, z, t, t_old):
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 
-spikes = 2
 
 #def root_function(c_try, t_1_try):
 def root_function(inputs):
@@ -210,7 +216,9 @@ def root_function(inputs):
     global tangent
     
     c = inputs[0]
-    firing_times = [0] + inputs[1:-1]
+    firing_times = np.zeros(spikes)
+    for n in range(1, spikes):
+        firing_times[n] = inputs[n]
     C = inputs[-1]
     update_C(C)
     
@@ -226,18 +234,19 @@ def root_function(inputs):
             u_old = u(t, t_old, u_old)
         t_old = t
     #Roots for being correct distance away
-    outputs[-1] = np.dot((firing_times - base_estimate), tangent)
+    outputs[-1] = np.dot((inputs - base_estimate), tangent)
     return outputs
 
 
 def jacobian_like(vector, tangent, h):
     assert h > 0
-    
     global c
     global firing_times
     global C
     c = vector[0] 
-    firing_times_raw = [0] + vector[1:-1]
+    firing_times_raw = np.zeros(spikes)
+    for n in range(1, spikes):
+        firing_times_raw[n] = vector[n]
     C = vector[-1]
     update_C(C)
     
@@ -246,81 +255,48 @@ def jacobian_like(vector, tangent, h):
     #This is real hacky but a consequence of how it's currently set up
     
     #First: varying c
-    col = 0
-    c += h
-    for row in range(spikes):
-        t = firing_times_raw[row]
-        if row == 0:
-            matrix[row, col] = v(t)
-            u_old = u(t)
-        else:
-            matrix[row, 0] = v(t, t_old, u_old)
-            u_old = u(t, t_old, u_old)
-        t_old = t
-    c -= 2*h
-    for row in range(spikes):
-        t = firing_times_raw[row]
-        if row == 0:
-            matrix[row, col] -= v(t)
-            u_old = u(t)
-        else:
-            matrix[row, 0] -= v(t, t_old, u_old)
-            u_old = u(t, t_old, u_old)
-        matrix[row, 0] /= 2*h
-        t_old = t
-    c = vector[0]
-    #Second: varying each firing time
-    for col in range(1, spikes):
+
+    for col in range(spikes+1):
         firing_times = firing_times_raw[:]
-        firing_times[col] += h
+        #Set up to calculate the +h part
+        if col == 0:
+            c = vector[0] + h
+        elif col == spikes:
+            C = vector[-1] + h
+            update_C(C)
+        else:
+            firing_times[col] += h
+        #Calculate the +h part
         for row in range(spikes):
             t = firing_times[row]
             if row == 0:
                 matrix[row, col] = v(t)
                 u_old = u(t)
             else:
-                matrix[row, col] = v(t, t_old, u_old)
-                u_old = u(t, t_old, u_old) 
+                matrix[row, 0] = v(t, t_old, u_old)
+                u_old = u(t, t_old, u_old)
             t_old = t
-        firing_times[col] -= h
+        #Set up to calculate the -h part
+        if col == 0:
+            c = vector[0] - h
+        elif col == spikes:
+            C = vector[-1] - h
+            update_C(C)
+        else:
+            firing_times[col] -= 2*h
+        #Calculate the -h part
         for row in range(spikes):
             t = firing_times[row]
             if row == 0:
                 matrix[row, col] -= v(t)
                 u_old = u(t)
             else:
-                matrix[row, col] -= v(t, t_old, u_old)
+                matrix[row, 0] -= v(t, t_old, u_old)
                 u_old = u(t, t_old, u_old)
-            matrix[row, col] /= 2*h
+            matrix[row, 0] /= 2*h
             t_old = t
-    #Third: varying C (or R, as I'll probably end up calling it later)
-    col = spikes
-    C += h
-    update_C(C)
-    for row in range(spikes):
-        t = firing_times_raw[row]
-        if row == 0:
-            matrix[row, col] = v(t)
-            u_old = u(t)
-        else:
-            matrix[row, col] = v(t, t_old, u_old)
-            u_old = u(t, t_old, u_old) 
-        t_old = t
-    C -= 2*h
-    update_C(C)
-    for row in range(spikes):
-        t = firing_times_raw[row]
-        if row == 0:
-            matrix[row, col] -= v(t)
-            u_old = u(t)
-        else:
-            matrix[row, col] -= v(t, t_old, u_old)
-            u_old = u(t, t_old, u_old) 
-        matrix[row, col] /= 2*h
-        t_old = t
 
-
-    #Fourth: just fill in the tangent
+    #Then just fill in the tangent
     row = spikes
     for col in range(spikes+1):
         matrix[spikes, col] = tangent[col]
@@ -329,9 +305,46 @@ def jacobian_like(vector, tangent, h):
 
 #------------------------------------------------------------------------------
 
+spikes = 2
+guess = [1, 1, C]
+
+static_vector = np.zeros(spikes+1)
+static_vector[-1] = 1
+#Make up an initial "tangent"
+tangent = np.zeros(spikes+1)
+tangent[-1] = 1
+
+epsilon = 0.01
+points = []
 
 
 
+for n in range(5):
+    print(n)
+    #NR to find a point on the curve
+    base_estimate = guess[:]
+    soln = optimize.root(root_function, guess, tol=0.0001)
+    if soln.success:
+        #Record solution
+        points.append(soln.x)
+        #Estimate the tangent at that point
+        J_like = jacobian_like(soln.x, tangent, 0.0001)
+        inv_J = linalg.inv(J_like)
+        z_vector = np.dot(inv_J, static_vector)
+        #Normalise z_vector
+        dot_product = np.dot(z_vector, tangent)
+        sign = abs(dot_product) / dot_product 
+        z_vector *= sign / linalg.norm(z_vector, ord = np.inf)
+            #Why ||.||_inf ?  Faster?
+        tangent = z_vector[:]
+        #Create next guess
+        guess = soln.x + epsilon * tangent
+    else:
+        print("NR failed...")
+        break
+
+for point in points:
+    print(point)
 
 
 
