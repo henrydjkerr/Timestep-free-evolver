@@ -15,7 +15,7 @@ a = 1
 B = 2
 b = 2
 
-C = 0.001
+C = 2.001
 D = 1
 
 I = 0.90 * (C + D) / D
@@ -23,8 +23,8 @@ I = 0.90 * (C + D) / D
 v_th = 1
 v_r = 0
 
-c_values = np.linspace(0.1, 3.6, 40)
-t_values = np.linspace(0.5, 10.5, 40)
+c_values = np.linspace(0.1, 3.1, 40)
+t_values = np.linspace(0.1, 6.5, 40)
 
 #c_values = np.linspace(2.0, 3.5, 50)
 #t_values = np.linspace(1, 4, 50)
