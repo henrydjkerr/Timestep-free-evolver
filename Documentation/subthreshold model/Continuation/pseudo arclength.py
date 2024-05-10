@@ -11,7 +11,7 @@ a = 1
 B = 2
 b = 2
 
-C = 1
+C = 3
 D = 1
 I_raw = 0.9
 
@@ -23,8 +23,6 @@ C_max = 3.001
 C_steps = 30
 x_count = 6
 y_count = 12
-
-print( (-9) ** 0.5)
 
 def update_C(new_C):
     global C
@@ -50,7 +48,6 @@ def update_C(new_C):
     return
 
 update_C(C)
-print("hi")
 
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
@@ -245,17 +242,16 @@ def jacobian_like(vector, tangent, h):
     global C
     c = vector[0] 
     firing_times_raw = np.zeros(spikes)
+    firing_times = np.zeros(spikes)
     for n in range(1, spikes):
         firing_times_raw[n] = vector[n]
+        firing_times[n] = vector[n]
     C = vector[-1]
     update_C(C)
     
-    matrix = np.ndarray((spikes+1, spikes+1))
+    matrix = np.zeros((spikes+1, spikes+1))
     #Finite difference (centred) to approximate derivative
     #This is real hacky but a consequence of how it's currently set up
-    
-    #First: varying c
-
     for col in range(spikes+1):
         firing_times = firing_times_raw[:]
         #Set up to calculate the +h part
@@ -306,49 +302,132 @@ def jacobian_like(vector, tangent, h):
 #------------------------------------------------------------------------------
 
 spikes = 2
-guess = [1, 1, C]
+
+#[c, t_1, R]
+start_points = [
+    ([2, 0.5, 3], [0, 0, -1]),  #Middle branch, starts where it says
+    ([0.5, 1, 3], [0, 0, -1]),  #Bottom branch, goes all the way to zero
+    ([1, 2.2, 3], [0, 0, -1]),  #Starts lower right, connects to bend
+    ([1.7, 4, 0.1], [0, 0, 1]), #Top branch
+    ([3, 2, 3], [0, 0, -1]),    #Also top branch, but other end
+    ([2, 2, 0.5], [0, 0, 1]),   #Goes around the curve... or used to
+    ([2, 2, 0.5], [0, 0, -1]),  #Doesn't help much, terminates quickly
+    ([0.5, 7, 0.1], [0, -1, 0]),    #Aiming for "unstable" split wave branch
+    ##([2, 7, 0.1], [0, -1, 0]),  #Aiming for "stable" split wave branch (top b.)
+    ]
+
+##start_points = [
+##    ([0.7, 1.5, 0.1], [0, 0, -1])
+##    ]
 
 static_vector = np.zeros(spikes+1)
 static_vector[-1] = 1
 #Make up an initial "tangent"
-tangent = np.zeros(spikes+1)
-tangent[-1] = 1
+tangent_original = np.zeros(spikes+1)
+tangent_original[-1] = 1
 
-epsilon = 0.01
+base_epsilon = 0.05
 points = []
 
+for seed in start_points:
+    print("")
+    print(seed)
+    guess = seed[0]
+    tangent = seed[1]
+    #tangent[-1] = seed[1]
+    #tangent = tangent_original[:] * seed[1]
+    #print("tangent", tangent)
+    #print("guess", guess)
+    #print("static_vector", static_vector)
+    
+    for n in range(60):
+        #NR to find a point on the curve
+        base_estimate = guess[:]
+        #if n == 0: print("base_estimate", base_estimate)
 
+        count = 0
+        epsilon = base_epsilon
+        count_break = 10
+        while count < count_break:
+            try:
+                soln = optimize.root(root_function, guess, tol=0.0001)
+                #print(base_estimate)
+            except TypeError:
+                count = count_break + 1
+                break
+            if soln.success:
+                #if n == 0: print("soln.x", soln.x)
+                #if n == 0: print("tangent", tangent)
+                #Record solution
+                points.append(soln.x)
+                #Estimate the tangent at that point
+                J_like = jacobian_like(soln.x, tangent, 0.0001)
+                #if n == 0: print("J_like", J_like)
+                #if n == 0: print("static_vector", static_vector)
+                inv_J = linalg.inv(J_like)
+                z_vector = np.dot(inv_J, static_vector)
+                #Normalise z_vector
+                dot_product = np.dot(z_vector, tangent)
+                #if n == 0: print("dot_product", dot_product)
+                sign = abs(dot_product) / dot_product 
+                #z_vector *= sign / linalg.norm(z_vector, ord = np.inf)
+                                                    #Works better than ord = 2?
+                z_vector *= sign / linalg.norm(z_vector, ord = 2)
+                #if n == 0: print("z_vector", z_vector)
+                tangent = z_vector[:]
+                #Create next guess
+                old_soln = soln.x[:]
+                epsilon = base_epsilon
+                guess = old_soln + epsilon * tangent
+                break
+            else:
+                epsilon /= 2
+                guess = old_soln + epsilon * tangent
+                count += 1
+        if count == count_break:
+            print("NR failed...")
+            print("n =", n)
+            
+            break
+        elif count == count_break + 1:
+            print("C gone wrong?")
+            print("C =", C)
+            print("q = 0.5 *", (D-1)**2 - 4*C, "** 0.5")
+            print("n =", n)
+            print("epsilon =", epsilon)
+            break
 
-for n in range(5):
-    print(n)
-    #NR to find a point on the curve
-    base_estimate = guess[:]
-    soln = optimize.root(root_function, guess, tol=0.0001)
-    if soln.success:
-        #Record solution
-        points.append(soln.x)
-        #Estimate the tangent at that point
-        J_like = jacobian_like(soln.x, tangent, 0.0001)
-        inv_J = linalg.inv(J_like)
-        z_vector = np.dot(inv_J, static_vector)
-        #Normalise z_vector
-        dot_product = np.dot(z_vector, tangent)
-        sign = abs(dot_product) / dot_product 
-        z_vector *= sign / linalg.norm(z_vector, ord = np.inf)
-            #Why ||.||_inf ?  Faster?
-        tangent = z_vector[:]
-        #Create next guess
-        guess = soln.x + epsilon * tangent
-    else:
-        print("NR failed...")
-        break
+#for point in points:
+#    print(point)
 
+plot_c = []
+plot_t = []
+plot_R = []
 for point in points:
-    print(point)
+    plot_c.append(point[0])
+    plot_t.append(point[1])
+    plot_R.append(point[-1])
+
+##plt.figure()
+##plt.scatter(plot_R, plot_c, s=0.4)
+##plt.xlabel("$R$")
+##plt.ylabel("Wave speed $c$")
+##plt.title("Wave solutions by speed for given $R$ (formerly $C$)")
+##plt.xlim(0,3)
+##plt.ylim(0,3)
+##plt.show()
 
 
-
-
+plt.figure()
+ax = plt.axes(projection = "3d")
+ax.scatter3D(plot_R, plot_c, plot_t, s=0.4)
+ax.set_xlabel("$R$")
+ax.set_ylabel("Wave speed $c$")
+ax.set_zlabel("Second firing time")
+plt.title("Wave solutions by speed for given $R$ (formerly $C$)")
+ax.set_xlim(0,3)
+ax.set_ylim(0,3)
+plt.show()
 
 
 
