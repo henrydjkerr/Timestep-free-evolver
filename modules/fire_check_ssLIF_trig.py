@@ -109,7 +109,7 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
 
         case = 0
         extreme_exists = False
-        fire_flag_d[n] = 0
+        fire_flag_d[n] = False
         lower_bound_d[n] = 0
         upper_bound_d[n] = 0
 
@@ -183,7 +183,7 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
         #Case 4: both bounds depend on inflection point
         #Case 5: lower bound = 0, need to step through for upper bound
         if case > 0:
-            fire_flag_d[n] = 1
+            fire_flag_d[n] = True
         if case in (3, 4):
             #Need to sort out stuff about the inflection point for minima
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - -

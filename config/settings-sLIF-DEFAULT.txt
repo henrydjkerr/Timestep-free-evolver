@@ -3,7 +3,7 @@ connection_weight:connection_weight_difference_of_normals
 v_calcs:v_calcs_SLIF
 i_update:input_update_shutoff
 
-v_init:voltage_init_random_uniform
+v_init:voltage_init_zero
 i_init:input_init_gaussian
 coord_init:coordinate_init_R123
 

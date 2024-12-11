@@ -8,9 +8,9 @@ beta = 6
 A = 2
 a = 1
 B = 2
-b = 1.57
+b = 2
 
-C = 0.0001
+C = 2.000
 D = 1
 
 I = 0.90 * (D + C)/D
@@ -85,7 +85,7 @@ def calc_integral(z, c, param, func_id):
 
 #Assume the function is decreasing
 #This is probably going to be a bit of a hack for now
-c = 1
+c = 1.2
 step = 0.5
 margin = 0.00001
 for count in range(100):

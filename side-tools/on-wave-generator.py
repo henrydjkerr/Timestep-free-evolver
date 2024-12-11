@@ -1,12 +1,12 @@
 from math import e, erf
 
-beta = 2
+beta = 1.5
 A = 2
 a = 1
 B = 2
 b = 2
 
-c = 0.8
+c = 0.55
 
 I = 0.9
 dx = 0.04

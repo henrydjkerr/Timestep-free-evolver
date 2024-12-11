@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from math import e, erf, pi
 
 #Shouldn't be 1 for this program, just use 1.0001 or similar
-beta = 2
+beta = 6
 A = 2
 a = 1
 B = 2

@@ -54,6 +54,7 @@ def postclean_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             voltage_d[n] = Control.v.get_vt(fastest_time_d, voltage_d[n],
                                             synapse_d[n], wigglage_d[n],
                                             input_strength_d[n])
+        
         wigglage_d[n] = Control.v.get_ut(fastest_time_d, temp_voltage,
                                          synapse_d[n], wigglage_d[n],
                                          input_strength_d[n])

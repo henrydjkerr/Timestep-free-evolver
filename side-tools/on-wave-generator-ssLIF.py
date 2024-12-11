@@ -1,20 +1,20 @@
 from math import e, erf, pi, cos, sin
 
-beta = 4
+beta = 6
 A = 2
 a = 1
 B = 2
-b = 3
+b = 2
 
-I = 3.4
+C = 0.31857354
+D = 1
 
-C = 6
-D = 2
+I = 0.9 * (D + C) / D
 
-c = 3.24
+c = 0.19758914
 
-dx = 0.004
-neurons_number = 5000
+dx = 0.01
+neurons_number = 2000
 
 
 ##is_2D = False
