@@ -84,19 +84,20 @@ for name in branches:
 for graze in grazes:
     plt.scatter(graze[0], graze[1], color = graze[2], zorder = 100)
     
-plt.xlabel("Synaptic response rate $\\beta$")
+plt.xlabel("$\\beta$ (Synaptic response rate)")
 #plt.xlabel("Wave speed $c$")
-plt.ylabel("Wave speed $c$")
+plt.ylabel("$c$ (Wave speed)")
 #plt.ylabel("Inter-spike time $t_1$")
 #plt.title("Two-spike wave solutions, D = 1")
-plt.title("Wave solutions for given $\\beta$; $R$ = 2.6")
+plt.title("Wave solutions for given $\\beta$; $R$ = 2.6, $D$ = 1")
 plt.xlim(0,10)
-plt.ylim(0,4)
+plt.ylim(0,4.2)
+plt.yticks([0, 1, 2, 3, 4])
 #plt.ylim(0, 5.5)
 #plt.legend()
 if print_mode:
-    plt.savefig("PAC R=2.6 high res vs c.pdf")
-    plt.savefig("PAC R=2.6 high res vs c.png")
+    plt.savefig("PAC R=2.6 vs c.pdf")
+    plt.savefig("PAC R=2.6 vs c.png")
 else:
     plt.show()
 

@@ -8,11 +8,11 @@ gold = np.array((0.85, 0.75, 0.2))
 white = np.array((1.0, 1.0, 1.0))
 fade = 0.67
 
-print_mode = False
+print_mode = True
 if print_mode:
-    plt.figure(figsize=(6, 6), dpi=400)
+    plt.figure(figsize=(5, 5), dpi=400)
 else:
-    plt.figure(figsize=(6,6))
+    plt.figure(figsize=(5,5))
 
 branches = {
     "1spike_graze.txt" : {
@@ -69,10 +69,11 @@ for n in range(points):
 plt.plot(base_D, base_R, color="#999999", linestyle="dashed",
          label="Trigonometric limit")
 
-plt.xlabel("$D$")
-plt.ylabel("$R$")
+#plt.tight_layout()
+plt.xlabel("$D$ (Ion channel activity decay rate)")
+plt.ylabel("$R$ (Ion channel response rate)")
 plt.title("Folds and grazes for two-spike wave solutions, $\\beta$ = 6")
-plt.xlim(0,4)
+plt.xlim(0,4.5)
 plt.ylim(0,8)
 plt.legend(loc="lower right")
 if print_mode:

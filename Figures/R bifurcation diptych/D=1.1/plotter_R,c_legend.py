@@ -18,46 +18,57 @@ blue2fade = (1 - fade) * blue2 + fade * white
 goldfade  = (1 - fade) * gold + fade * white
 
 branches = {
-    "1spike_pregraze.txt" : {
+    "1spike_stable_pregraze.txt" : { #---
         "colour" : gold,
         "linestyle" : "solid",
-        "graze" : True,
+        "graze" : False,
         "label" : "One-spike wave"},
-    "1spike_postgraze.txt" : {
+    "1spike_stable_postgraze.txt" : {
         "colour" : goldfade,
         "linestyle" : "solid"},
-    "1spike_unstable.txt" : {
+    "1spike_unstable_pregraze.txt" : {
+        "colour" : gold,
+        "linestyle" : "dotted",
+        "graze" : False},
+    "1spike_unstable_postgraze.txt" : {
         "colour" : goldfade,
         "linestyle" : "dotted"},
-    "slow_pregraze.txt" : {
+    "slow_stable_pregraze.txt" : { #---
         "colour" : blue2,
         "linestyle" : "solid",
-        "graze" : True,
+        "graze" : False,
         "label" : "Slow two-spike wave"},
-    "slow_postgraze.txt" : {
+    "slow_stable_postgraze.txt" : {
         "colour" : blue2fade,
         "linestyle" : "solid"},
-    "slow_unstable.txt" : {
+    "slow_unstable_pregraze.txt" : {
+        "colour" : blue2,
+        "linestyle" : "dotted",
+        "graze" : False},
+    "slow_unstable_postgraze.txt" : {
         "colour" : blue2fade,
         "linestyle" : "dotted"},
-    "fast_unstable_pregraze.txt" : {
+    "fast_unstable_pregraze.txt" : { #---
         "colour" : blue1,
         "linestyle" : "dotted",
-        "graze" : True},
+        "graze" : 2},
     "fast_unstable_postgraze.txt" : {
+        "colour" : blue1fade,
+        "linestyle" : "dotted"},
+    "fast_unstable_postgraze_high.txt" : {
+        "colour" : blue1fade,
+        "linestyle" : "dotted"},
+    "fast_unstable_other_postgraze.txt" : {
         "colour" : blue1fade,
         "linestyle" : "dotted"},
     "fast_stable_pregraze.txt" : {
         "colour" : blue1,
         "linestyle" : "solid",
-        "graze" : True,
+        "graze" : False,
         "label" : "Fast two-spike wave"},
     "fast_stable_postgraze.txt" : {
         "colour" : blue1fade,
-        "linestyle" : "solid"},
-    "fast_stable_unstable.txt" : {
-        "colour" : blue1fade,
-        "linestyle" : "dotted"}
+        "linestyle" : "solid"}
     }
 
 grazes = []
@@ -79,28 +90,28 @@ for name in branches:
         plt.plot(plot_R, plot_c, c = branches[name]["colour"],
                  linestyle = branches[name]["linestyle"])
     if "graze" in branches[name]:
-        if branches[name]["graze"]:
+        if branches[name]["graze"] in (True, 2):
             grazes.append([plot_R[0], plot_c[0], branches[name]["colour"]])
-        else:
+        if branches[name]["graze"] in (False, 2):
             grazes.append([plot_R[-1], plot_c[-1], branches[name]["colour"]])
 
 for graze in grazes:
     plt.scatter(graze[0], graze[1], color = graze[2], zorder = 100)
     
-plt.xlabel("$\\beta$ (Synaptic response rate)")
+plt.xlabel("$R$ (Ion channel response rate)")
 #plt.xlabel("Wave speed $c$")
 plt.ylabel("$c$ (Wave speed)")
 #plt.ylabel("Inter-spike time $t_1$")
 #plt.title("Two-spike wave solutions, D = 1")
-plt.title("Wave solutions for given $\\beta$; $R$ = 2.5, $D$ = 1")
-plt.xlim(0,10)
+plt.title("Wave solutions for given $R$; $D$ = 1.1, $\\beta$ = 6")
+plt.xlim(0,4)
 plt.ylim(0,4)
 plt.yticks([0, 1, 2, 3, 4])
 #plt.ylim(0, 5.5)
-#plt.legend(loc= "upper left")
+plt.legend(loc = "upper left")
 if print_mode:
-    plt.savefig("PAC R=2.5 vs c legend.pdf")
-    plt.savefig("PAC R=2.5 vs c legend.png")
+    plt.savefig("PAC D=1.1 vs c legend.pdf")
+    plt.savefig("PAC D=1.1 vs c legend.png")
 else:
     plt.show()
 

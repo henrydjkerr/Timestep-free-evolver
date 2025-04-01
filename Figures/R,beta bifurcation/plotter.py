@@ -10,9 +10,9 @@ fade = 0.67
 
 print_mode = False
 if print_mode:
-    plt.figure(figsize=(6, 6), dpi=400)
+    plt.figure(figsize=(5, 5), dpi=400)
 else:
-    plt.figure(figsize=(6,6))
+    plt.figure(figsize=(5,5))
 
 branches = {
     "1spike_graze.txt" : {
@@ -46,19 +46,19 @@ branches = {
     "fast_fold.txt" : {
         "colour" : "#000000",
         "linestyle" : "dashed",
-        "label" : "Fold that splits the fast branch"},
+        "label" : "Folds"},#"label" : "Fold that splits the fast branch"},
     "slow_fold.txt" : {
         "colour" : "#555555",
         "linestyle" : "dashed",
-        "label" : "Fold, slow branch"},
+        },#"label" : "Fold, slow branch"},
     "stable_fold.txt" : {
         "colour" : "#777777",
         "linestyle" : "dashed",
-        "label" : "Fold, fast stable branch"},
+        },#"label" : "Fold, fast stable branch"},
     "unstable_fold.txt" : {
         "colour" : "#999999",
         "linestyle" : "dashed",
-        "label" : "Fold, fast unstable branch"}
+        },#"label" : "Fold, fast unstable branch"}
     }
 
 for name in branches:
@@ -80,11 +80,11 @@ for name in branches:
 
 
     
-plt.xlabel("$\\beta$")
-plt.ylabel("$R$")
+plt.xlabel("$\\beta$ (Synaptic response rate)")
+plt.ylabel("$R$ (Ion channel response rate)")
 plt.title("Folds and grazes for two-spike wave solutions, $D$ = 1")
 plt.xlim(0,30)
-plt.ylim(0,12)
+plt.ylim(0,12.5)
 plt.legend(loc="upper right")
 if print_mode:
     plt.savefig("Rbeta_diagram.pdf")
