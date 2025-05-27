@@ -37,6 +37,9 @@ def update(i):
 
 #------------------------------------------------------------------------------
 
+#colour = [149/255, 105/255, 190/255, 0.0]
+colour = [0.15, 0.55, 0.7, 0]
+
 def make_graph(filename):
     global filename_global
     filename_global = filename
@@ -53,7 +56,7 @@ def make_graph(filename):
     frame_count = total_length // frame_length
 
     global colours
-    colours = numpy.array([[149/255, 105/255, 190/255, 0.0] for d in source.data])
+    colours = numpy.array([colour[:] for d in source.data])
 
     global fig
     fig, ax = plt.subplots()

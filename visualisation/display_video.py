@@ -31,6 +31,9 @@ def update(i):
 
 #------------------------------------------------------------------------------
 
+#colour = [149/255, 105/255, 190/255, 0.0]
+colour = [0.15, 0.55, 0.7, 0]
+
 def make_graph(filename):
     global source
     source = data_reader.get(filename)
@@ -41,12 +44,12 @@ def make_graph(filename):
     global point_duration
     frame_length = 50
     total_length = len(source.data) * 1
-    point_duration = 0.3 * 1000 #How long before a given point fades completely
+    point_duration = 0.8 * 1000 #How long before a given point fades completely
     frame_count = total_length // frame_length
     print("frame count:", frame_count)
 
     global colours
-    colours = numpy.array([[149/255, 105/255, 190/255, 0.0] for d in source.data])
+    colours = numpy.array([colour[:] for d in source.data])
 
     global fig
     fig, ax = plt.subplots()
