@@ -67,7 +67,9 @@ def trig_phase(v_0, s_0, u_0, I):
     #Calculates the phase offset of the trigonometric/hyperbolic terms
     c_part = part_c(v_0, s_0, u_0, I)
     s_part = part_s(v_0, s_0, u_0, I)
-    if q2 < 0:
+    if c_part == 0:
+        return pi/2
+    elif q2 < 0:
         #Trigonometric case
         return atan(-s_part/c_part)
     else:
