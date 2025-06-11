@@ -20,7 +20,6 @@ from numba import cuda
 from modules.general import Control
 lookup = Control.lookup
 
-synapse_decay = lookup["synapse_decay"]
 decay_tolerance = lookup["decay_tolerance"]
 v_th = lookup["v_th"]
 v_r = lookup["v_r"]
@@ -34,6 +33,8 @@ def fire_check(arrays):
     Wrapper function so we don't need to specify which arrays are needed
     in the main program file.
     """
+    synapse_decay = lookup["synapse_decay"]
+    
     voltage_d = arrays["voltage"]
     synapse_d = arrays["synapse"]
     input_strength_d = arrays["input_strength"]
@@ -43,11 +44,13 @@ def fire_check(arrays):
     firing_time_d = arrays["firing_time"]
     fire_check_device[blocks, threads](voltage_d, synapse_d, input_strength_d,
                                        fire_flag_d, lower_bound_d,
-                                       upper_bound_d, firing_time_d)
+                                       upper_bound_d,
+                                       synapse_decay, firing_time_d)
 
 @cuda.jit()
 def fire_check_device(voltage_d, synapse_d, input_strength_d, fire_flag_d,
-                      lower_bound_d, upper_bound_d, firing_time_d):
+                      lower_bound_d, upper_bound_d,
+                      synapse_decay, firing_time_d):
     """
     Checks whether the neuron can fire and records firing bounds.
     We use the firing_time_d to hold the start point for a non-interval-type
@@ -104,7 +107,8 @@ def fire_check_device(voltage_d, synapse_d, input_strength_d, fire_flag_d,
                         if extreme_time >= 0:
                             #Don't want to do e**(+ve) to avoid OverflowError
                             extreme_v = Control.v.get_vt(extreme_time,
-                                                         v_0, s_0, I)
+                                                         v_0, s_0, I,
+                                                         synapse_decay)
                 else:
                     #Case synapse_decay ~= 1
                     #Already ruled out lack of extreme point by s_0 != 0
@@ -112,7 +116,8 @@ def fire_check_device(voltage_d, synapse_d, input_strength_d, fire_flag_d,
                     extreme_time = 1 - (v_0 - I)/s_0
                     if extreme_time >= 0:
                         #Don't want to do e**(+ve) to avoid OverflowError
-                        extreme_v = Control.v.get_vt(extreme_time, v_0, s_0, I)
+                        extreme_v = Control.v.get_vt(extreme_time,
+                                                     v_0, s_0, I, synapse_decay)
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             #With that knowledge, determine different cases
             if extreme_exists:
@@ -133,7 +138,8 @@ def fire_check_device(voltage_d, synapse_d, input_strength_d, fire_flag_d,
                     else:
                         inflect_time = extreme_time + 1
                     if inflect_time >= 0:
-                        inflect_v = Control.v.get_vt(inflect_time, v_0, s_0, I)
+                        inflect_v = Control.v.get_vt(inflect_time,
+                                                     v_0, s_0, I, synapse_decay)
                     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                     if inflect_time <= 0:
                         case = 3
@@ -173,9 +179,11 @@ def fire_check_device(voltage_d, synapse_d, input_strength_d, fire_flag_d,
             fire_flag_d[n] = 1
             if case in (4, 5, 6):
                 alt_inflect = inflect_time + (v_th - inflect_v) \
-                           / Control.v.get_dvdt(inflect_time, inflect_v, s_0, I)
+                           / Control.v.get_dvdt(inflect_time, inflect_v, s_0, I,
+                                                synapse_decay)
             if case in (2, 3, 7):
-                alt_zero = (v_th - v_0) / Control.v.get_dvdt(0, v_0, s_0, I)
+                alt_zero = (v_th - v_0) / Control.v.get_dvdt(0, v_0, s_0, I,
+                                                             synapse_decay)
             #Now to fill in the values of arrays per case
             #Case 1 has already been handled as trivial (and values not shared)
             #Newton-Raphson initial conditions:
@@ -202,7 +210,8 @@ def fire_check_device(voltage_d, synapse_d, input_strength_d, fire_flag_d,
                 while True:
                     test_t = 2**m
                     if test_t > lower_bound_d[n]:                    
-                        temp_v = Control.v.get_vt(test_t, v_0, s_0, I)
+                        temp_v = Control.v.get_vt(test_t, v_0, s_0, I,
+                                                  synapse_decay)
                         if temp_v > v_th:
                             upper_bound_d[n] = test_t
                             if (m != 0) and (test_t / 2 > lower_bound_d[n]):

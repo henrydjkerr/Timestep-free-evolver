@@ -15,6 +15,7 @@ blocks = lookup["blocks"]
 threads = lookup["threads"]
 
 def find_firing_time(arrays):
+    synapse_decay = lookup["synapse_decay"]
     voltage_d = arrays["voltage"]
     synapse_d = arrays["synapse"]
     input_strength_d = arrays["input_strength"]
@@ -25,12 +26,12 @@ def find_firing_time(arrays):
     find_firing_time_device[blocks, threads](voltage_d, synapse_d,
                                              input_strength_d, fire_flag_d,
                                              lower_bound_d, upper_bound_d,
-                                             firing_time_d)
+                                             synapse_decay, firing_time_d)
 
 @cuda.jit()
 def find_firing_time_device(voltage_d, synapse_d, input_strength_d,
                             fire_flag_d, lower_bound_d, upper_bound_d,
-                            firing_time_d):
+                            synapse_decay, firing_time_d):
     """
     Computes firing time estimates using the Newton-Raphson scheme.
     Terminates once the time estimates appear to have converged within
@@ -53,8 +54,9 @@ def find_firing_time_device(voltage_d, synapse_d, input_strength_d,
             I = input_strength_d[n]
             t_old = firing_time_d[n]
             for count in range(100):
-                v_test = Control.v.get_vt(t_old, v_0, s_0, I)
-                v_deriv = Control.v.get_dvdt(t_old, v_test, s_0, I)
+                v_test = Control.v.get_vt(t_old, v_0, s_0, I, synapse_decay)
+                v_deriv = Control.v.get_dvdt(t_old, v_test, s_0, I,
+                                             synapse_decay)
                 t_new = t_old + (v_th - v_test) / v_deriv
                 if abs(t_new - t_old) <= error_bound:
                     firing_time_d[n] = t_new

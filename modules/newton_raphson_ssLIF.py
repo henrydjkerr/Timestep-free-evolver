@@ -16,12 +16,11 @@ synapse_decay = lookup["synapse_decay"]
 blocks = lookup["blocks"]
 threads = lookup["threads"]
 
-C = lookup["C"]
-D = lookup["D"]
-p = 0.5*(D+1)
-abs_q = abs(0.5*((D - 1)**2 - 4*C)**0.5)
-
 def find_firing_time(arrays):
+    R = lookup["R"]
+    D = lookup["D"]
+    beta = lookup["synapse_decay"]
+    
     voltage_d = arrays["voltage"]
     synapse_d = arrays["synapse"]
     wigglage_d = arrays["wigglage"]
@@ -33,12 +32,12 @@ def find_firing_time(arrays):
     find_firing_time_device[blocks, threads](voltage_d, synapse_d, wigglage_d,
                                              input_strength_d, fire_flag_d,
                                              lower_bound_d, upper_bound_d,
-                                             firing_time_d)
+                                             beta, R, D, firing_time_d)
 
 @cuda.jit()
 def find_firing_time_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
                             fire_flag_d, lower_bound_d, upper_bound_d,
-                            firing_time_d):
+                            beta, R, D, firing_time_d):
     """
     Seeks the firing time v(t) = v_th, using the 'maximum acceleration method',
     my modification of the Newton-Raphson algorithm.
@@ -48,10 +47,17 @@ def find_firing_time_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
     """
     n = cuda.grid(1)
     if n < neurons_number:
+        p = 0.5*(D+1)
+        q2 = 0.25 * ((D - 1)**2 - 4*R)
+        if q2 >= 0:
+            abs_q = q2**0.5
+        else:
+            abs_q = (-q2)**0.5
+        
         if fire_flag_d[n]:
             #Load variables
             v_0 = voltage_d[n]
-            if v_0 > v_th:
+            if v_0 >= v_th:
                 #Edge case, don't want to root-solve in this case
                 firing_time_d[n] = 0
                 return
@@ -61,28 +67,28 @@ def find_firing_time_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             start_time = lower_bound_d[n]
             end_time = upper_bound_d[n]
             #Calculate derived constants
-            A = Control.v.coeff_trig(v_0, s_0, u_0, I)
-            B = Control.v.coeff_synapse(s_0)            #Start iterations
+            A = Control.v.coeff_trig(v_0, s_0, u_0, I, beta, R, D)
+            B = Control.v.coeff_synapse(s_0, beta, R, D)
+            #Start iterations
             t_old = start_time
             for count in range(100):
                 #Calculate upper bounds on derivatives
                 #You need fewer iterations if you do it inside the loop
                 Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * start_time) \
-                        + max(-synapse_decay * B * e**(-synapse_decay * start_time),
-                              -synapse_decay * B * e**(-synapse_decay * end_time))
+                        + max(-beta * B * e**(-beta * start_time),
+                              -beta * B * e**(-beta * end_time))
                 Maccel = max(abs(A * (p**4 + abs_q**4)**0.5) * e**(-p * start_time) \
-                             + max(synapse_decay**2 * B * e**(-synapse_decay
-                                                              * start_time),
-                                   synapse_decay**2 * B * e**(-synapse_decay
-                                                              * end_time)),
+                             + max(beta**2 * B * e**(-beta * start_time),
+                                   beta**2 * B * e**(-beta * end_time)),
                              0)
                 if Mvelo <= 0:
                     #Gradient is negative from here on, so you'll never cross
                     fire_flag_d[n] = 0
                     return
                 #Perform modified Newton-Raphson method
-                v_test = Control.v.get_vt(t_old, v_0, s_0, u_0, I)
-                v_deriv = Control.v.get_dvdt(t_old, v_test, v_0, s_0, u_0, I)
+                v_test = Control.v.get_vt(t_old, v_0, s_0, u_0, I, beta, R, D)
+                v_deriv = Control.v.get_dvdt(t_old, v_test, v_0, s_0, u_0, I,
+                                             beta, R, D)
                 m = min(Mvelo,
                         0.5*(v_deriv \
                              + (v_deriv**2 + 4*Maccel*(v_th - v_test))**0.5))

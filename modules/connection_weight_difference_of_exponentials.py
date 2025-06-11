@@ -18,9 +18,8 @@ dimension = lookup["dimension"]
 dx = lookup["dx"]
 dy = lookup["dy"]
 dz = lookup["dz"]
-beta = lookup["synapse_decay"]
 
-density_factor = beta
+density_factor = 1
 dims = [dx, dy, dz]
 for k in range(dimension):
     density_factor *= dims[k]

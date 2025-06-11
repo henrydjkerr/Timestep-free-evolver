@@ -18,64 +18,23 @@ lookup = Control.lookup
 
 #------------------------------------------------------------------------------
 
-##@cuda.jit(device = True)
-##def coeff_trig(v_0, s_0, u_0, I):
-##    #Coefficient of the trigonometric terms in the true voltage equation
-##    part_c = v_0 - coeff_synapse(s_0) - coeff_const(I)
-##    part_s = s_0 * (p**2 + q2 - p*(synapse_decay + 1) + synapse_decay)
-##    part_s += I * (p**2 + q2 - p) / (p**2 - q2) + v_0 * (1 - p) + u_0
-##    part_s *= -(1 / abs_q)
-##    if (part_c >= 0):
-##        sign = 1
-##    else:
-##        sign = -1
-##    return sign * (part_c**2 + part_s**2)**0.5
-##
-##@cuda.jit(device = True)
-##def coeff_synapse(s_0):
-##    #Coefficient of the synapse decay term in the true voltage equation
-##    return s_0 * (2*p - synapse_decay - 1) / ((p - synapse_decay)**2 - q2)
-##
-##@cuda.jit(device = True)
-##def coeff_const(I):
-##    #Long term limit in the true voltage equation
-##    return I * (2*p - 1) / (p*2 - q2)
-##
-##@cuda.jit(device = True)
-##def false_v(t, T, B, K):
-##    return T*e**(-p * t) + B*e**(-synapse_decay * t) + K
-##
-##@cuda.jit(device = True)
-##def false_dvdt(t, T, B):
-##    return -(p * T * e**(-p * t) + synapse_decay * B * e**(-synapse_decay * t))
-
-#------------------------------------------------------------------------------
-
-synapse_decay = lookup["synapse_decay"]
 decay_tolerance = lookup["decay_tolerance"]
 v_th = lookup["v_th"]
 v_r = lookup["v_r"]
 neurons_number = lookup["neurons_number"]
 
-C = lookup["C"]
-D = lookup["D"]
-
 blocks = lookup["blocks"]
 threads = lookup["threads"]
-
-
-p = 0.5*(D + 1)
-abs_q = abs(0.5*((D - 1)**2 - 4*C)**0.5)
-q2 = -abs_q**2
-#period = 2*pi / abs_q
-
-    
 
 def fire_check(arrays):
     """
     Wrapper function so we don't need to specify which arrays are needed
     in the main program file.
     """
+    synapse_decay = lookup["synapse_decay"]
+    R = lookup["R"]
+    D = lookup["D"]
+    
     voltage_d = arrays["voltage"]
     synapse_d = arrays["synapse"]
     wigglage_d = arrays["wigglage"]
@@ -86,11 +45,12 @@ def fire_check(arrays):
     fire_check_device[blocks, threads](voltage_d, synapse_d, wigglage_d,
                                        input_strength_d,
                                        fire_flag_d, lower_bound_d,
-                                       upper_bound_d)
+                                       upper_bound_d,
+                                       synapse_decay, R, D)
 
 @cuda.jit()
 def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
-                      fire_flag_d, lower_bound_d, upper_bound_d):
+                      fire_flag_d, lower_bound_d, upper_bound_d, beta, R, D):
     """
     Checks whether the neuron can fire and records firing bounds.
     We use the firing_time_d to hold the start point for a non-interval-type
@@ -101,7 +61,14 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
     """
     
     n = cuda.grid(1)
-    if n < neurons_number:        
+    if n < neurons_number:
+        p = 0.5*(D+1)
+        q2 = 0.25 * ((D - 1)**2 - 4*R)
+        if q2 >= 0:
+            abs_q = q2**0.5
+        else:
+            abs_q = (-q2)**0.5
+        
         v_0 = voltage_d[n]
         s_0 = synapse_d[n]
         u_0 = wigglage_d[n]
@@ -112,16 +79,8 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
         fire_flag_d[n] = False
         lower_bound_d[n] = 0
         upper_bound_d[n] = 0
-
-##        #Hacking past this
-##        if v_0 > 0.6:
-##            fire_flag_d[n] = 1
-##            lower_bound_d[n] = 0
-##            upper_bound_d[n] = 1
-##    return
-##
-##def blah():       
-        if v_0 > v_th:
+   
+        if v_0 >= v_th:
             #Trivial case: neuron is already firing
             case = 1
             lower_bound_d[n] = 0
@@ -130,18 +89,17 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             #No trivial non-firing case this time
             #First check if an extreme point exists
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            A = abs(Control.v.coeff_trig(v_0, s_0, u_0, I))
-            B = Control.v.coeff_synapse(s_0)
-            K = Control.v.coeff_const(I)
-            if (p == synapse_decay) or (B == 0) or (A*B >= 0):
+            A = abs(Control.v.coeff_trig(v_0, s_0, u_0, I, beta, R, D))
+            B = Control.v.coeff_synapse(s_0, beta, R, D)
+            K = Control.v.coeff_const(I, R, D)
+            if (p == beta) or (B == 0) or (A*B >= 0):
                 extreme_exists = False
             else:
                 extreme_exists = True
                 extreme_time = cuda.libdevice.log(-(p * A) /
-                                                  (B * synapse_decay)) \
-                                    / (p - synapse_decay)
+                                                  (B * beta)) / (p - beta)
                 extreme_v = Control.v.get_vt_upper(extreme_time,
-                                                   v_0, s_0, u_0, I)
+                                                   v_0, s_0, u_0, I, beta, R, D)
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             #With that knowledge, determine different cases
             if A+B+K > v_th:
@@ -188,11 +146,10 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             #Need to sort out stuff about the inflection point for minima
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             inflect_time = cuda.libdevice.log(-(p**2 * A)
-                                              / (synapse_decay**2 * B)) \
-                           / (p - synapse_decay)
+                                              / (beta**2 * B)) / (p - beta)
             if inflect_time > 0:
                 inflect_v = Control.v.get_vt_upper(inflect_time,
-                                                   v_0, s_0, u_0, I)
+                                                   v_0, s_0, u_0, I, beta, R, D)
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             if inflect_time <= 0:
                 lower_bound_d[n] = 0
@@ -212,17 +169,18 @@ def fire_check_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             while True:
                 test_t = 2**m
                 if test_t > lower_bound_d[n]:
-                    temp_v = Control.v.get_vt_upper(test_t, v_0, s_0, u_0, I)
+                    temp_v = Control.v.get_vt_upper(test_t, v_0, s_0, u_0, I,
+                                                        beta, R, D)
                     if temp_v > v_th:
                         upper_bound_d[n] = test_t
                         break
-                m += 1
+                    m += 1
         if case > 1:
             #Update the upper bound to account for the oscillation period
-            theta = Control.v.trig_phase(v_0, s_0, u_0, I)
+            theta = Control.v.trig_phase(v_0, s_0, u_0, I, beta, R, D)
             upper_bound_d[n] = (2 * pi * ceil((abs_q * upper_bound_d[n]
-                                            + theta) / (2*pi) ) - theta)/abs_q
-    #return
+                                                + theta) / (2*pi) ) - theta)/abs_q
+        return
             
 
 
