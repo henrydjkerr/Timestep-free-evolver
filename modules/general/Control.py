@@ -37,6 +37,7 @@ xi = importlib.import_module(names["coord_init"])
 
 check = importlib.import_module(names["fire_check"])
 solve = importlib.import_module(names["root_finder"])
+paramchange = importlib.import_module(names["paramchange"])
 clean = importlib.import_module(names["cleanup"])
 
 #Really this should be some sort of loop

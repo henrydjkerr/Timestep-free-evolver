@@ -1,7 +1,7 @@
 >KW_PAPER
 distance:distances_ring_123
 connection_weight:connection_weight_difference_of_exponentials
-v_calcs:v_calcs_SLIF
+v_calcs:v_calcs_sLIF
 i_update:input_update_shutoff
 
 v_init:voltage_init_random_uniform
@@ -10,4 +10,5 @@ coord_init:coordinate_init_R123
 
 fire_check:fire_check_sLIF
 root_finder:newton_raphson
+paramchange:update_null
 cleanup:cleanup_sLIF

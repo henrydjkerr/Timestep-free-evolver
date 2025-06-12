@@ -2,8 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import e, erf, pi, cos, sin
 
-dx = 0.01
-neurons_number = 4000
+dx = 0.3
+neurons_number = 100
+neurons_y = 100
+
+c, t, C = 2.69362964354985,2.158687482521653,2.0
 
 beta = 6
 A = 2
@@ -11,62 +14,19 @@ a = 1
 B = 2
 b = 2
 
-R = 2.7
 D = 1
 
-c, t, R, beta = 3.9061977321401318,0.29425162529177734,6,22.51706789421304
-#c, t, R = 2.909730207488435,1.734185379350179,2.790520302356714
-
-
-I = 0.9 * (D + R) / D
+I = 0.9 * (D + C) / D
 print("I =", I)
 
 firing_times = [0, t]
-
-##c = 2.71
-##firing_times = [0, 5]
-##
-### - - -
-##c = 0.05
-##firing_diff = [1.06, 0.80, 0.71, 0.65, 0.61, 0.61,
-##               0.58, 0.56, 0.54, 0.53, 0.53, 0.53,
-##               0.52, 0.51, 0.50, 0.49, 0.48, 0.48,
-##               0.47, 0.47, 0.47, 0.46, 0.46, 0.46, 
-##               0.46, 0.45, 0.45, 0.44, 0.44,
-##               0.43, 0.43, 0.42, 0.42, 0.41,
-##               0.41, 0.40, 0.40, 0.40, 0.40, 0.39, 
-##               0.39, 0.39, 0.39, 0.39, 0.39,
-##               0.39, 0.39, 0.39, 0.39, 0.39, 
-##               0.39, 0.39, 0.39, 0.39, 0.39,
-##               0.40, 0.40, 0.40, 0.40,
-##               0.40, 0.40, 0.40, 0.40, 0.40, 
-##               0.40, 0.40, 0.40, 0.40, 0.41,
-##               0.41, 0.41, 0.41, 0.41, 0.41,
-##               0.42, 0.42, 0.42, 0.42, 0.43,
-##               0.43, 0.43, 0.43, 
-##               0.44, 0.44, 0.45, 0.45, 0.46,
-##               0.46, 0.46, 0.46, 0.46, 0.46,
-##               0.47, 0.47,
-##               0.48, 0.48, 0.49, 0.50, 0.51,
-##               0.51, 0.51, 0.51, 
-##               0.52, 0.53, 0.53, 0.53, 0.54,
-##               0.55, 0.56, 0.58, 0.62, 0.63, 0.64,
-##               0.66, 0.68, 0.70, 0.71, 0.75, 0.75]
-##
-##firing_times = [0]
-##for inc in firing_diff:
-##    firing_times.append(firing_times[-1] + inc)
-### - - -
-
-
-
 u_at_firing_times = firing_times[:]
 
 v_r = 0
 
 #Derived values
 p = 0.5*(D+1)
-q = 0.5*( (D-1)**2 -4*R )**0.5
+q = 0.5*( (D-1)**2 -4*C )**0.5
 if type(q) != type((-1)**0.5):
     print("q is", q)
     print("q should be imaginary for this to work")
@@ -178,22 +138,22 @@ def u(t, t_old = None, u_old = None):
     coeff_cos = 1 / ((p - beta)**2 - q2)
     coeff_sin = (p - beta) / (((p - beta)**2 - q2) * abs_q)
     
-    part_I = R * I / (p**2 - q2)
+    part_I = C * I / (p**2 - q2)
     part_init = 0
     if t_old != None:
         part_I *= 1 - e**(-p * (t - t_old)) * cos(abs_q * (t - t_old))
-        part_I -= R * I * (p / ((p**2 - q2) * abs_q))   \
+        part_I -= C * I * (p / ((p**2 - q2) * abs_q))   \
                   * e**(-p * (t - t_old)) * sin(abs_q * (t - t_old))
         part_init = e**(-p * (t - t_old))       \
                     * (u_old * cos(abs_q * (t - t_old))
-                       + ((R * v_r + u_old * (1 - p)) / abs_q)
+                       + ((C * v_r + u_old * (1 - p)) / abs_q)
                           * sin(abs_q * (t - t_old)))
-    part_s = s(t) * R * coeff_cos
+    part_s = s(t) * C * coeff_cos
 
     part_t_old = 0
     if t_old != None:
         part_t_old = s(t_old) * e**(-p * (t - t_old))       \
-                     * R * (  coeff_cos * cos(abs_q * (t - t_old))
+                     * C * (  coeff_cos * cos(abs_q * (t - t_old))
                             + coeff_sin * sin(abs_q * (t - t_old)))
 ##
 ##    print("u_old", u_old)
@@ -221,13 +181,13 @@ def part_u(Z, z, t, t_old):
                                    func_name = "sine", lower = t_old)
     part_cos *= coeff_cos
     part_sin *= coeff_sin
-    return -R * beta * Z * (part_cos + part_sin)
+    return -C * beta * Z * (part_cos + part_sin)
     
 #-----------------------------------------------------------------------------
 
-v_file = open("v-import-ssLIF.txt", "w")
-u_file = open("u-import-ssLIF.txt", "w")
-s_file = open("s-import-ssLIF.txt", "w")
+v_file = open("v-import-ssLIF-2D.txt", "w")
+u_file = open("u-import-ssLIF-2D.txt", "w")
+s_file = open("s-import-ssLIF-2D.txt", "w")
 line_end = "\n"
 
 #Finding values of u at firing times
@@ -236,6 +196,10 @@ for k, t in enumerate(firing_times):
         u_at_firing_times[k] = u(t)
     else:
         u_at_firing_times[k] = u(t, firing_times[k-1], u_at_firing_times[k-1])
+
+v_line = []
+u_line = []
+s_line = []
 
 for n in range(neurons_number):
     t = -(n - neurons_number//2) * dx / c
@@ -249,11 +213,17 @@ for n in range(neurons_number):
     voltage = v(t, t_last, u_last)
     wigglage = u(t, t_last, u_last)
     synapse = s(t)
-    if n == neurons_number - 1:
-        line_end = ""
-    v_file.write(str(voltage) + line_end)
-    u_file.write(str(wigglage) + line_end)
-    s_file.write(str(synapse) + line_end)
+    v_line.append(str(voltage))
+    u_line.append(str(wigglage))
+    s_line.append(str(synapse))
+
+for y in range(neurons_y):
+    for n in range(neurons_number):
+        if (n == neurons_number - 1) and (y == neurons_y - 1):
+            line_end = ""
+        v_file.write(v_line[n] + line_end)
+        u_file.write(u_line[n] + line_end)
+        s_file.write(s_line[n] + line_end)
 v_file.close()
 u_file.close()
 s_file.close()

@@ -1,0 +1,3 @@
+voltage:v-import-ssLIF-2D.txt
+synapse:s-import-ssLIF-2D.txt
+wigglage:u-import-ssLIF-2D.txt

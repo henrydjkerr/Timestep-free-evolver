@@ -50,7 +50,8 @@ def postclean_device(voltage_d, synapse_d, input_strength_d,
             voltage_d[n] = v_r
         else:                   #If not firing
             voltage_d[n] = Control.v.get_vt(fastest_time_d, voltage_d[n],
-                                            synapse_d[n], input_strength_d[n])
+                                            synapse_d[n], input_strength_d[n],
+                                            synapse_decay)
         #Update synapse value wrt time evolution
         synapse_d[n] *= e**(-synapse_decay * fastest_time_d)
         #Update synapse value wrt other neurons firing
