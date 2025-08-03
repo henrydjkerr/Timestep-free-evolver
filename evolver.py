@@ -243,6 +243,16 @@ array_manager.retrieve("coordinates")
 save.save_data(spike_id, spike_time, array_manager.host_arrays["coordinates"])
 print("Save file closed.")
 
+#Also save the final profile of the variables in separate files
+#Need to fix this up better so it's agnostic of sLIF/ssLIF/etc.
+#But for now...
+array_manager.retrieve("voltage")
+array_manager.retrieve("wigglage")
+array_manager.retrieve("synapse")
+save.save_profile(array_manager.host_arrays["voltage"], "v")
+save.save_profile(array_manager.host_arrays["voltage"], "u")
+save.save_profile(array_manager.host_arrays["voltage"], "s")
+
 #Plot graph, if desired
 #Should probably file this off
 coordinates = array_manager.host_arrays["coordinates"]

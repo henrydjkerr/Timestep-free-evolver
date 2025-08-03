@@ -30,3 +30,13 @@ def save_data(spike_id, spike_time, coordinates):
             line += "," + str(coordinates[n, d])
         outfile.write(line + "\n")
     outfile.close()
+
+def save_profile(array, name):
+    timestamp = time.strftime("%Y%m%d%H%M%S")
+    identifier = "{}-{}N-{}sp".format(timestamp, neurons_number, spikes_sought)
+    filename = "output/output-{}_{}.txt".format(identifier, name)
+    outfile = open(filename, "w")
+    for value in array:
+        outfile.write(str(value) + "\n")
+    outfile.close()
+    
