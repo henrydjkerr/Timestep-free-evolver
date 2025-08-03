@@ -74,11 +74,11 @@ def find_firing_time_device(voltage_d, synapse_d, wigglage_d, input_strength_d,
             for count in range(100):
                 #Calculate upper bounds on derivatives
                 #You need fewer iterations if you do it inside the loop
-                Mvelo = abs(A * (p**2 + abs_q**2)**0.5) * e**(-p * start_time) \
-                        + max(-beta * B * e**(-beta * start_time),
+                Mvelo = (p + abs_q) * abs(A) * e**(-p * t_old) \
+                        + max(-beta * B * e**(-beta * t_old),
                               -beta * B * e**(-beta * end_time))
-                Maccel = max(abs(A * (p**4 + abs_q**4)**0.5) * e**(-p * start_time) \
-                             + max(beta**2 * B * e**(-beta * start_time),
+                Maccel = max((p**2 + abs_q**2) * abs(A) * e**(-p * t_old) \
+                             + max(beta**2 * B * e**(-beta * t_old),
                                    beta**2 * B * e**(-beta * end_time)),
                              0)
                 if Mvelo <= 0:
