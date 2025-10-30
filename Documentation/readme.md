@@ -9,9 +9,7 @@ This program was written and tested on Windows 10, as is the case for most thing
 
 ### Dependencies
 
-This program is written in Python 3, and utilises parallel processing via Numba's CUDA interface, so an NVidia GPU is necessary to run this code. You will also need to install the CUDA toolkit and Numba, along with any additional CUDA dependencies reduired in the Numba documentation.
-
-This program also requires the numpy and matplotlib libraries.
+This program is written in Python 3.13, utilising numpy 2.1.3, scipy 1.15.2 and Numba 0.61.0, as well as matplotlib 3.10.0 for visualisation.  The program makes use of GPU-based parallel processing via Numba's CUDA interface, so a compatible NVidia GPU is also necessary. You will also need to install the CUDA toolkit, along with any additional CUDA dependencies reduired in the Numba documentation.
 
 ## Program overview
 
