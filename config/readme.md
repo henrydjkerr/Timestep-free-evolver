@@ -14,6 +14,7 @@ These are lists of the currently available config files.  They typically relate 
 ## Array files
  - `arrays-sLIF.txt` sets the arrays used in the sLIF model.
  - `arrays-ssLIF.txt` sets the arrays used in the ssLIF model.
+Note that the array for neuron coordinates is generated automatically, so is not specified through these files.
 
 ## Initial condition files
  - `data_import-NULL.txt` is an empty file used when you don't want to load any initial conditions from external files.
