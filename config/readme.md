@@ -12,8 +12,8 @@ These are lists of the currently available config files.  They typically relate 
  - `settings-ssLIF-IMPORT-dynamic.txt`selects modules to run the ssLIF model with the neuron voltage (and other variables) initialised according to input files, and constant external input.  It additionally alters __PARAMETER-NAME__ according to settings in `parameters.txt`
 
 ## Array files
- - ``arrays-sLIF.txt` sets the arrays used in the sLIF model.
- - ``arrays-ssLIF.txt` sets the arrays used in the ssLIF model.
+ - `arrays-sLIF.txt` sets the arrays used in the sLIF model.
+ - `arrays-ssLIF.txt` sets the arrays used in the ssLIF model.
 
 ## Initial condition files
  - `data_import-NULL.txt` is an empty file used when you don't want to load any initial conditions from external files.
