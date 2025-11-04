@@ -7,11 +7,11 @@ version:IMPORT_WAVE
 threads:256
 
 |Target number of spikes sought
-spikes_sought:10000
+spikes_sought:6000
 
 |How close to the first firing time you need to be in relative terms to qualify as simultaneous firing
 |Should be non-negative
-leniency_threshold:0.00000
+leniency_threshold:0.000001
 
 |Margin of agreement for successive Newton approximations to be considered a final result
 |Should be positive
@@ -22,14 +22,14 @@ Dimensions
 ==========
 |Number of neurons in each grid dimension
 |If the number is 1 or less, that dimension will be neglected
-neuron_count_x:100
-neuron_count_y:100
+neuron_count_x:4000
+neuron_count_y:1
 neuron_count_z:1
 
 |Spacing between neurons in each dimension
 |Should be non-negative
-dx:0.1
-dy:0.1
+dx:0.01
+dy:1
 dz:1
 
 |Offsets for even rows, to create hexagonal patterns
@@ -54,7 +54,7 @@ v_th:1
 
 |Don't set this to 1 (or almost 1) for now or else you'll get divide-by-zero errors
 |Should be non-negative
-synapse_decay:2
+synapse_decay:6
 |How small (synapse_decay - 1) is allowed to get before you swap to 
 |special equations
 decay_tolerance: 0.00001
@@ -63,9 +63,9 @@ decay_tolerance: 0.00001
 Connection strength options
 ===========================
 #Difference of normal curves
-normal_strength_e:0.8
+normal_strength_e:2
 normal_sigma_e:1
-normal_strength_i:0.4
+normal_strength_i:2
 normal_sigma_i:2
 
 #Difference of exponentials
@@ -86,8 +86,8 @@ input_strength:10
 input_shutoff:1.0
 
 |Baseline input values before and after shutoff
-input_base_before:0.9
-input_base_after:0.9
+input_base_before:1.35
+input_base_after:1.35
 
 |Modifiers for cosh-reciprocal curve shape
 rc_height:2
@@ -96,14 +96,14 @@ rc_narrow:10
 
 Subthreshold stuff
 ==================
-R:6
+R:0.5
 D:1
 
-dR:0.1
-R_target:7
+dR:0
+R_target:0
 dbeta:0
 beta_target:0
 dD:0
 D_target:0
 
-bifurcation:6.857558502645934
+bifurcation:0

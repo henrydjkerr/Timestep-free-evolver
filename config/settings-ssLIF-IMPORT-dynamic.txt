@@ -9,5 +9,5 @@ coord_init:coordinate_init_R123
 
 fire_check:fire_check_ssLIF_trig
 root_finder:newton_raphson_ssLIF
-paramchange:update_R
+paramchange:update_beta
 cleanup:cleanup_ssLIF
