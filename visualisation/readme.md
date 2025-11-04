@@ -1,4 +1,4 @@
-This folder contains various tools to visualise outputs from the main program.  Copy an output .csv file from the output folder into this folder, paste its name into `thing.py` and select your visualisation method through module imports.
+This folder contains various tools to visualise outputs from the main program.  Copy an output .csv file from the output folder into this folder, paste its name into `use_this_one.py` and select your visualisation method through module imports.
 
 Your options for visualisation are:
  - `display_1D.py` plots individual firing events as dots, with the x-coordinate of the neuron's position on the horizontal axis and the firing time on the vertical axis.  Further spatial dimensions are discarded.
