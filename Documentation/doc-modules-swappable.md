@@ -1,8 +1,6 @@
 This document describes the variety of modules that can be swapped between to manage certain functionality, stored within the folder `modules`.
 
-In general, modules that are to execute device-side have host-side wrappers.  The reason for this is that Numba does not support **kwargs or dictionary arguments with the device-side functions, which means that if a piece of code wants to call a device-side function, it has to know the exact arguments it wants.  I considered this undesirable, because it requires explicitly numbering and naming all the arrays needed in the main program file.  Different models need different number of variables, and I don't want you to have to swap or alter `evolver.py` for each model you use.  So instead, you call a wrapper function that takes a dictionary of all device-side arrays as an argument, then picks the ones it wants to call the device-side function with.
-
-This has the bonus advantage of removing the repeated `[blocks, threads]` notation from the function calls, which makes things less cramped in my opinion.
+In general, modules that are to execute device-side have host-side wrappers.  The reason for this is that Numba does not support **kwargs or dictionary arguments when calling device-side functions, which means that any code that calls a device-side function needs to know (and explicitly list) every argument the function wants—particularly troublesome when we want to be able to swap between modules with different argument lists.  The host-side wrapper function simply picks the needed arguments from dictionaries then passes them on to the device-side function, removing the need for long argument lists in the core code.
 
 Modules are grouped by the name they are bound to in existing modules.  At present, some of these are still referenced in non-swappable code (so the program is not fully generic yet), meaning you should expect to conform to these names even if you create an all-new set of swap-in modules.
 
