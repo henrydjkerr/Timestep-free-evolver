@@ -1,4 +1,4 @@
-This document describes the variety of modules that can be swapped between to manage certain functionality.
+This document describes the variety of modules that can be swapped between to manage certain functionality, stored within the folder `modules`.
 
 In general, modules that are to execute device-side have host-side wrappers.  The reason for this is that Numba does not support **kwargs or dictionary arguments with the device-side functions, which means that if a piece of code wants to call a device-side function, it has to know the exact arguments it wants.  I considered this undesirable, because it requires explicitly numbering and naming all the arrays needed in the main program file.  Different models need different number of variables, and I don't want you to have to swap or alter `evolver.py` for each model you use.  So instead, you call a wrapper function that takes a dictionary of all device-side arrays as an argument, then picks the ones it wants to call the device-side function with.
 
@@ -7,6 +7,29 @@ This has the bonus advantage of removing the repeated `[blocks, threads]` notati
 Modules are grouped by the name they are bound to in existing modules.  At present, some of these are still referenced in non-swappable code (so the program is not fully generic yet), meaning you should expect to conform to these names even if you create an all-new set of swap-in modules.
 
 
+# Modules `cleanup`
+
+## cleanup_sLIF.py
+
+## cleanup_ssLIF.py
+
+# Modules `connection_weight`
+
+## connection_weight_difference_of_exponentials.py
+
+## connection_weight_difference_of_normals.py
+
+# Modules `coordinate_init`
+
+## coordinate_init_R123.py
+
+# Modules `distances`
+
+## distances_R123.py
+
+## distances_ring_1.py
+
+## distances_ring_123.py
 
 # Modules `fire_check`
 These modules perform the task of determining whether a given neuron will attain its firing condition without further input.  If the neuron will fire, the associated position in the flag array is set to true, and upper and lower bounds on the firing time are calculated. Otherwise, the flag is set to false.
@@ -33,7 +56,6 @@ The arrays required are named by the dictionary keys: voltage, synapse, input_st
 TODO: supply auxiliary document running through the case-selection rationale.
 
 
-
 ## fire_check_ssLIF.py
 For use with the subthreshold-synaptic LIF (sLIF) model in the case where the system of governing ODEs has complex eigenvalues leading to oscillatory terms.  
 
@@ -58,7 +80,25 @@ TODO: think up a variable name that's more publishable than "wigglage"
 
 TODO: supply auxiliary document running through the case-selection rationale.
 
+# Modules `input_init`
 
+## input_init_constant.py
+
+## input_init_coshreciprocal.py
+
+## input_init_coshreciprocal_1d.py
+
+## input_init_gaussian.py
+
+# Modules `input_update`
+
+## input_update_constant.py
+
+## input_update_shutoff.py
+
+## input_update_ssLIF_dynamic.py
+
+# Modules `newton_raphson`
 
 ## newton_raphson.py
 A conventional implementation of the Newton-Raphson algorithm.  For simplicity's sake, it is hard-coded to solve the sLIF equations, determining an accurate and precise value of t that satisfies v(t) = v_th.
@@ -82,3 +122,59 @@ In brief, rather than extrapolating the derivative of the current point each ite
 The arrays required are named by the dictionary keys: voltage, synapse, wigglage, input_strength, fire_flag, lower_bound, upper_bound, firing_time.
 
 `find_firing_time_device(voltage, synapse, wigglage, input_strength, fire_flag, lower_bound, upper_bound, firing_time)`: for the given neuron index `n`, if `fire_flag[n] == True`, execute the modified Newton-Raphson scheme to numerically find a solution to $v(t) = v_{th}$ for $t > 0$ and store it in the array `firing_time[n]`.  If no such value is found between `lower_bound[n]` and `upper_bound[n]`, set `fire_flag[n] = False` instead.
+
+
+# Modules `update`
+
+## update_beta.py
+
+## update_D.py
+
+## update_null.py
+
+# Modules `v_calcs`
+
+## v_calcs_sLIF.py
+
+## v_calcs_ssLIF.py
+
+
+# Modules `voltage_init`
+These modules initialise the voltage variable array, after any initial conditions have been loaded in from file.  Note that if no ICs are loaded from file, the entries of the array default to 0.
+
+## voltage_init_null.py
+A dummy module that does nothing.  Used to leave the initial conditions loaded from file intact.
+
+### Functions
+`array_init(voltage_d, coordinates_d)`: device-side function.  Does nothing.
+
+
+## voltage_init_primesine.py
+Sets the voltage to $v_\text{r} + (v_\text{th} - v_\text{r}) \cdot \frac{1}{3}(\sin(7x) + \sin(11x) + \sin(17x))$, where $x$ is the x-coordinate of the neuron.  A function chosen arbitrarily to give a "complicated" but spatially-continuous initial condition.
+
+### Functions
+`array_init(voltage_d, coordinates_d)`: device-side function.  Modifies $v$ in place, as described above.
+
+
+## voltage_init_random_uniform.py
+Intended to set the voltage to a random value selected uniformly from the interval $[v_\text{r}, v_\text{r}  + 0.5(v_\text{th} - v_\text{r}))$.  However, at present it expects the array to come pre-filled with uniform random numbers on the interval $[0, 1)$, so it only rescales the values.  Initialising the array with such a format requires modifications to the array initialisation in `modules.general.array_manager`.
+
+### Functions
+`array_init(voltage_d, coordinates_d)`: device-side function.  Modifies $v$ in place, as described above.
+
+
+## voltage_init_zero.py
+Sets the voltage to 0 everywhere.
+
+### Functions
+`array_init(voltage_d, coordinates_d)`: device-side function.  Modifies $v$ in place, as described above.
+
+
+
+# Miscellaneous modules
+
+## device_gaussian.py
+A module to provide a Gaussian on the device-side.  Used by some custom modules, but not something you need to request in the `modules` file.
+
+### Functions
+`curve(mu, sigma)`: device-side function.  Returns the value at `mu` of a Gaussian curve with mean 0 and variance `sigma`^2.  (Or the mean is `mu` and it's evaluated at 0, if you prefer.)
